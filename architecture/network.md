@@ -59,14 +59,14 @@ graph TD
 
 ### Flux Externe (Cloudflare Zero Trust)
 
-1. L'utilisateur accède à `service.zorko.xyz` depuis Internet
+1. L'utilisateur accède à `vault.zorko.xyz` depuis Internet
 2. **Cloudflare Access** vérifie l'authentification (email OTP, session 24h)
 3. Le **Tunnel zserv** achemine la requête de façon chiffrée vers **Cloudflared** (CT 110) — aucun port ouvert sur la Freebox
 4. **Cloudflared** transmet vers **NPM** qui route vers le service cible
 
 ### Flux Interne (LAN → AdGuard → NPM)
 
-1. L'utilisateur sur le LAN accède à `service.zorko.xyz`
+1. L'utilisateur sur le LAN accède à `radarr.zorko.xyz`
 2. **AdGuard Home** (DNS Freebox) résout `*.zorko.xyz → 192.168.1.186` (wildcard)
 3. **NPM** reçoit la requête, termine le SSL, route vers le service interne
 4. Accès direct au service sans passer par Cloudflare

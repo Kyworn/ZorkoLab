@@ -120,9 +120,11 @@ graph TD
 | Rôle | Matériel | Capacité |
 |------|----------|----------|
 | Routeur/Box | Freebox Delta v7 | 10G ↓ / 900M ↑ |
-| Switch | Non managé | 1 Gbit/s |
-| WiFi | Intégré Freebox v7 | WiFi 6E tri-band |
+| Switch | HPE (192.168.1.77) | Gigabit |
+| WiFi Mesh | TP-Link Deco BE25 (×3) | WiFi 7 BE3600 — 2,5G uplink — ~490m² |
 | DNS filtrant | VM Freebox (AdGuard) | 1 077k règles |
+
+> ⚠️ **WiFi Freebox désactivé** — entièrement remplacé par le mesh TP-Link Deco BE25 3-pack. Le Deco gère la couverture WiFi 7 sur toute la surface, avec itinérance transparente entre les 3 points d'accès.
 
 ---
 

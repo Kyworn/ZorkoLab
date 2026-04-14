@@ -22,7 +22,7 @@
 | **Machines Virtuelles** | 1 stoppée | debian12-cloudinit (template) |
 | **Capacité Stockage** | 932 GB | 661 GB utilisés (70.9%) — 271 GB libres |
 | **RAM Proxmox** | 32 GB DDR4 | ~6.4 GB utilisés (19.5%) |
-| **CPU Hyperviseur** | AMD Ryzen 5 5600X | 6 cores / 12 threads |
+| **CPU Hyperviseur** | AMD Ryzen 5 5600X | 6 cores / 12 threads — Corsair 680X |
 | **Uptime Proxmox** | 9+ jours | PVE 9.1.7 / kernel 6.17.4-2-pve |
 | **Freebox Delta** | FW 4.9.18.1 | Uptime: 10 jours — 10 Gbps ↓ / 900 Mbps ↑ |
 
@@ -81,7 +81,7 @@ graph TB
     end
 
     subgraph COMPUTE["💻 Proxmox VE 9.1.7 — Debian Trixie"]
-        PVE[⚙️ AMD Ryzen 5 5600X<br/>6C/12T — 32 GB RAM<br/>192.168.1.61]
+        PVE[⚙️ AMD Ryzen 5 5600X<br/>6C/12T — 32 GB RAM — Corsair 680X<br/>2× Quadro P5000 — 192.168.1.61]
 
         subgraph LXC_INFRA["Infrastructure (3 CT)"]
             CT_NPM[🔀 Nginx Proxy Manager — 118<br/>192.168.1.186]

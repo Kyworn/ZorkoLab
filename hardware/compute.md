@@ -8,19 +8,12 @@ Ce document liste le matériel physique utilisé pour l'hébergement des machine
 |-----------|------------------------|-------|
 | **CPU** | AMD Ryzen 5 5600X | 6 cores / 12 threads — jusqu'à 4.6 GHz |
 | **RAM** | 32 GB DDR4 | ~6.4 GB utilisés en prod |
-| **Châssis** | Mini PC ACEMAGICIAN | Format compact |
+| **Châssis** | Corsair 680X | Tour ATX |
+| **GPU** | 2× NVIDIA Quadro P5000 | 16 GB VRAM chacune — passthrough vers LXC 201 |
 | **OS** | Proxmox VE 9.1.7 | Debian Trixie (13), kernel 6.17.4-2-pve |
 | **Stockage OS** | 512 GB NVMe (nvme-biwin) | LVM-thin, 71% utilisé |
 | **IP** | 192.168.1.61:8006 | |
 | **Uptime** | ~9 jours | Stable |
-
-## Serveur GPU (Inference AI)
-
-| Composant | Modèle / Spécification | Notes |
-|-----------|------------------------|-------|
-| **GPU** | 2× NVIDIA Quadro P5000 | 16 GB VRAM chacune — passthrough vers LXC 201 |
-| **Rôle** | LXC 201 (inference) | Ollama — modèles LLM locaux |
-| **IP LXC** | 192.168.1.11 | |
 
 ## Charges de Travail sur Proxmox
 

@@ -59,7 +59,7 @@ graph TD
 
 ### Flux Externe (Cloudflare Zero Trust)
 
-1. L'utilisateur accède à `vault.zorko.xyz` depuis Internet
+1. L'utilisateur accède à `vault.zorko.xyz` ou `plex.zorko.xyz` depuis Internet
 2. **Cloudflare Access** vérifie l'authentification (email OTP, session 24h)
 3. Le **Tunnel zserv** achemine la requête de façon chiffrée vers **Cloudflared** (CT 110) — aucun port ouvert sur la Freebox
 4. **Cloudflared** transmet vers **NPM** qui route vers le service cible

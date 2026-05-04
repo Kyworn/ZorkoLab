@@ -13,7 +13,7 @@ Ce document inventorie le matériel physique de l'hyperviseur Proxmox.
 | **Stockage OS** | 512 GB NVMe SSD (LVM-thin) |
 | **Système d'Exploitation** | Proxmox VE 9.1.9 (Debian Trixie 13) |
 | **Noyau (Kernel)** | 7.0.0-3-pve |
-| **Réseau** | IP: `10.10.10.1` (VLAN 10) |
+| **Réseau** | IP: `192.168.1.61` (LAN) |
 
 ## Allocation des Ressources (LXC)
 

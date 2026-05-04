@@ -112,7 +112,7 @@ Plus de 31 services sont routés via Nginx Proxy Manager. Voici les principaux :
 
 | Service | Endpoint Interne | Domaine | Accès |
 |:---|:---|:---|:---|
-| **Proxmox VE** | `10.10.10.1:8006` | `pve.zorko.xyz` | 🔒 LAN Only |
+| **Proxmox VE** | `192.168.1.61:8006` | `pve.zorko.xyz` | 🔒 LAN Only |
 | **TrueNAS** | `192.168.1.109:80` | `nas.zorko.xyz` | 🔒 LAN Only |
 | **Vaultwarden**| `10.10.20.14:8000` | `vault.zorko.xyz` | 🌍 Public (WAF Auth) |
 | **Gitea** | `10.10.20.20:3000` | `git.zorko.xyz` | 🌍 Public (WAF Auth) |

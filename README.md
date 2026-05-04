@@ -115,7 +115,7 @@ Plus de 31 services sont routés via Nginx Proxy Manager. Voici les principaux :
 | **Proxmox VE** | `192.168.1.61:8006` | `pve.zorko.xyz` | 🔒 LAN Only |
 | **TrueNAS** | `192.168.1.109:80` | `nas.zorko.xyz` | 🔒 LAN Only |
 | **Vaultwarden**| `10.10.20.14:8000` | `vault.zorko.xyz` | 🌍 Public (WAF Auth) |
-| **Gitea** | `10.10.20.20:3000` | `git.zorko.xyz` | 🌍 Public (WAF Auth) |
+| **Gitea** | `10.10.20.20:3000` | `git.zorko.xyz` | 🔒 LAN Only |
 | **Grafana** | `10.10.10.10:3000` | `grafana.zorko.xyz` | 🔒 LAN Only |
 | **Media Hub** | `10.10.20.30:xxxx` | `radarr.*`, `sonarr.*` | 🔒 LAN Only |
 | **qBittorrent**| `10.10.20.10:8090` | `qbit.zorko.xyz` | 🔒 LAN Only |

@@ -28,13 +28,13 @@ Le stockage de données principal repose sur un système de fichiers ZFS configu
 
 ```mermaid
 pie title Utilisation du Pool Tank (Total : 932 GB)
-    "Backups Proxmox (302 GB)" : 302
-    "Films (183 GB)" : 183
-    "Séries TV (82 GB)" : 82
-    "Downloads (49 GB)" : 49
-    "Fichiers Personnels (36 GB)" : 36
+    "Backups Proxmox (143 GB)" : 143
+    "Films (191 GB)" : 191
+    "Séries TV (171 GB)" : 171
+    "Downloads (57 GB)" : 57
+    "Fichiers Personnels (42 GB)" : 42
     "Projets Git (2 GB)" : 2
-    "Espace Libre (271 GB)" : 271
+    "Espace Libre (320 GB)" : 320
 ```
 
 *(Mise à jour automatique des quotas via scripts de surveillance ZFS)*

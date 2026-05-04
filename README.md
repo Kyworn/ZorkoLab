@@ -85,7 +85,7 @@ graph TD
 | **Sécurité** | CrowdSec, Proxmox Firewall, AdGuard | **Actifs & Durcis** |
 | **Compute** | AMD Ryzen 5 5600X (6C/12T) / 32 GB RAM | ~20% d'utilisation RAM |
 | **GPU** | 2× NVIDIA Quadro P5000 (16 GB) | Allouées à l'IA (LXC 201) |
-| **Containers** | 12 LXC "Unprivileged" | Production 24/7 |
+| **Containers** | 11 LXC "Unprivileged" actifs (+1 stoppé) | Production 24/7 |
 | **Stockage** | ZFS Miroir (TrueNAS) | **661 GB** / 932 GB (70.9% utilisés) |
 
 ---

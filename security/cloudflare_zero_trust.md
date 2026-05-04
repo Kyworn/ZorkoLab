@@ -4,7 +4,7 @@ L'infrastructure s'appuie sur Cloudflare pour exposer les services de manière u
 
 ## Principe du Tunnel Cloudflared
 
-Un démon `cloudflared` tourne directement sur l'hôte Proxmox. Il maintient des connexions sortantes (tunnels chiffrés persistants) vers les datacenters de Cloudflare.
+Un démon `cloudflared` tourne directement sur l'hôte Proxmox (géré à distance via Token). Il maintient des connexions sortantes (tunnels chiffrés persistants) vers les datacenters de Cloudflare.
 
 ```mermaid
 sequenceDiagram

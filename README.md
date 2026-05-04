@@ -1,258 +1,144 @@
-# 🏠 Homelab Infrastructure - Zorko
+# 🏠 ZorkoLab : Infrastructure & Homelab
 
-> Infrastructure auto-hébergée complète avec virtualisation, stockage ZFS, et accès sécurisé via Cloudflare Zero Trust
+> Architecture d'hébergement privé haute performance, orientée sécurité (Zero-Trust), virtualisation et intelligence artificielle.
 
-![Proxmox](https://img.shields.io/badge/Proxmox-VE_9.1.9-E57000?logo=proxmox&logoColor=white)
-![Debian](https://img.shields.io/badge/Debian-Trixie_13-A81D33?logo=debian&logoColor=white)
-![TrueNAS](https://img.shields.io/badge/TrueNAS-Scale_26.0.0--BETA.1-0095D5?logo=truenas&logoColor=white)
-![Cloudflare](https://img.shields.io/badge/Cloudflare-Zero_Trust-F38020?logo=cloudflare&logoColor=white)
-![ZFS](https://img.shields.io/badge/ZFS-RAID1-00979D?logo=openzfs&logoColor=white)
-![LXC](https://img.shields.io/badge/LXC-12_Conteneurs-success)
-![Storage](https://img.shields.io/badge/Storage-70.9%25_Used-orange)
+![Proxmox](https://img.shields.io/badge/Proxmox_VE-9.1.9-E57000?style=for-the-badge&logo=proxmox&logoColor=white)
+![Debian](https://img.shields.io/badge/Debian_13_Trixie-A81D33?style=for-the-badge&logo=debian&logoColor=white)
+![TrueNAS](https://img.shields.io/badge/TrueNAS_Scale-26.0_BETA-0095D5?style=for-the-badge&logo=truenas&logoColor=white)
+![Cloudflare](https://img.shields.io/badge/Zero_Trust-F38020?style=for-the-badge&logo=cloudflare&logoColor=white)
+![ZFS](https://img.shields.io/badge/ZFS_RAID_1-00979D?style=for-the-badge)
 
 ---
 
-## 📊 Vue d'Ensemble de l'Infrastructure
+## 🏗️ Architecture du Système
 
-### Statistiques Actuelles
-
-| Métrique | Valeur | Détails |
-|----------|--------|---------|
-| **Conteneurs LXC** | 12 actifs + 1 stoppé | Production 24/7 |
-| **Machines Virtuelles** | 1 stoppée | debian12-cloudinit (template) |
-| **Capacité Stockage** | 932 GB | 661 GB utilisés (70.9%) — 271 GB libres |
-| **RAM Proxmox** | 32 GB DDR4 | ~6.4 GB utilisés (19.5%) |
-| **CPU Hyperviseur** | AMD Ryzen 5 5600X | 6 cores / 12 threads — Corsair 680X |
-| **Uptime Proxmox** | 9+ jours | PVE 9.1.7 / kernel 7.0.0-3-pve |
-| **Freebox Delta** | FW 4.9.18.1 | Uptime: 10 jours — 10 Gbps ↓ / 900 Mbps ↑ |
-
-### Répartition du Stockage TrueNAS (Tank — 661 GB / 932 GB)
+L'infrastructure est bâtie sur un modèle hyper-convergé séparant logiquement le stockage (TrueNAS) du calcul (Proxmox), tout en assurant une isolation stricte des services via des VLANs.
 
 ```mermaid
-pie title Utilisation Stockage Tank (70.9%)
-    "Backups Proxmox" : 302
-    "Films" : 183
-    "Share" : 36
-    "Séries TV" : 82
-    "Downloads" : 49
-    "Projets Git" : 2
-    "Espace Libre" : 271
+graph TD
+    %% Styles
+    classDef cloud fill:#F38020,stroke:#fff,stroke-width:2px,color:#fff
+    classDef pve fill:#E57000,stroke:#fff,stroke-width:2px,color:#fff
+    classDef truenas fill:#0095D5,stroke:#fff,stroke-width:2px,color:#fff
+    classDef lxc fill:#4CAF50,stroke:#fff,stroke-width:2px,color:#fff
+    classDef vlan fill:#2c3e50,stroke:#bdc3c7,stroke-width:2px,color:#fff,stroke-dasharray: 5 5
+
+    subgraph Internet ["🌐 Internet Edge"]
+        CF["☁️ Cloudflare Zero Trust<br/>(WAF, DDoS Protection, Access)"]:::cloud
+    end
+
+    subgraph Network ["🏠 Réseau Domestique (Freebox Delta 10G)"]
+        ADG["🛡️ AdGuard Home<br/>(DNS Filtrant + DNSSEC)"]:::lxc
+    end
+
+    subgraph Proxmox ["⚙️ Proxmox VE (Compute Node) — 192.168.1.61"]
+        CF_TUN["🔒 Cloudflared Tunnel<br/>(Host Daemon)"]:::pve
+
+        subgraph VLAN10 ["🟦 VLAN 10 : Management (10.10.10.x)"]
+            NPM["🔀 Nginx Proxy Manager (118)"]:::lxc
+            GRAF["📈 Grafana (115)"]:::lxc
+            JARVIS["🤖 Jarvis/Hermes (202)"]:::lxc
+        end
+
+        subgraph VLAN20 ["🟩 VLAN 20 : Applications (10.10.20.x)"]
+            VAULT["🔒 Vaultwarden (114)"]:::lxc
+            GIT["🗂️ Gitea (120)"]:::lxc
+            MEDIA["🎬 Media Hub (130)"]:::lxc
+            QBIT["⬇️ qBittorrent (104)"]:::lxc
+            HB["🏡 Homebridge (102)"]:::lxc
+        end
+
+        subgraph VLAN30 ["🟨 VLAN 30 : Développement (10.10.30.x)"]
+            DOCKER["🐋 Docker Host (112)"]:::lxc
+            PORTFOLIO["🌐 Portfolio (121)"]:::lxc
+        end
+
+        subgraph VLAN40 ["🟪 VLAN 40 : Intelligence Artificielle (10.10.40.x)"]
+            INFER["🧠 Inference Ollama (201)<br/>(Passthrough 2x P5000)"]:::lxc
+        end
+    end
+
+    subgraph Storage ["💿 TrueNAS Scale (Storage Node) — 192.168.1.109"]
+        ZFS["🗄️ ZFS Pool: Tank (RAID 1)<br/>932 GB"]:::truenas
+    end
+
+    %% Routing
+    CF -->|Trafic Web Sécurisé| CF_TUN
+    CF_TUN -->|Reverse Proxy HTTP/S| NPM
+    
+    NPM --> VLAN10
+    NPM --> VLAN20
+    NPM --> VLAN30
+    NPM --> VLAN40
+    
+    VLAN20 -.->|NFS Mounts| ZFS
+    VLAN10 -.->|Backups| ZFS
 ```
 
 ---
 
-## 🏗️ Architecture Globale
+## 📊 État de l'Infrastructure
 
-### Flux de Trafic Internet → Services
-
-```mermaid
-graph LR
-    A[🌐 Internet] -->|HTTPS| B[☁️ Cloudflare Edge]
-    B -->|WAF + DDoS Protection| C{🔐 Access Control}
-    C -->|✅ Authentifié| D[🔒 Tunnel zserv]
-    C -->|❌ Bloqué| E[⛔ Access Denied]
-    D -->|Connexions HA| F[📡 Cloudflared (PVE Host)]
-    F -->|Reverse Proxy| G[🔀 Nginx Proxy Manager LXC 118]
-    G -->|Route vers| H[🎯 Services LXC]
-
-    style B fill:#f38020,stroke:#333,stroke-width:2px,color:#fff
-    style C fill:#f9a825,stroke:#333,stroke-width:2px
-    style D fill:#4caf50,stroke:#333,stroke-width:2px,color:#fff
-    style E fill:#f44336,stroke:#333,stroke-width:2px,color:#fff
-    style F fill:#2196f3,stroke:#333,stroke-width:2px,color:#fff
-    style G fill:#9c27b0,stroke:#333,stroke-width:2px,color:#fff
-    style H fill:#00bcd4,stroke:#333,stroke-width:2px,color:#fff
-```
-
-### Architecture Infrastructure Complète
-
-```mermaid
-graph TB
-    subgraph CLOUD["☁️ Cloudflare Zero Trust"]
-        DNS[🌍 DNS zorko.xyz]
-        TUNNEL[🔒 Tunnel zserv]
-        WAF[🛡️ WAF + DDoS]
-        ACCESS[🔐 Access Apps]
-    end
-
-    subgraph EDGE["🏠 Réseau Domestique - FTTH 10G"]
-        ROUTER[📡 Freebox Delta fbxgw7r<br/>10 Gbit/s ↓ / 900 Mbit/s ↑<br/>FW 4.9.18.1]
-        ADGUARD[🛡️ AdGuard Home VM<br/>192.168.1.189<br/>DNS filtrant + DNSSEC]
-    end
-
-    subgraph COMPUTE["💻 Proxmox VE 9.1.9 — Debian Trixie"]
-        PVE[⚙️ AMD Ryzen 5 5600X<br/>6C/12T — 32 GB RAM — Corsair 680X<br/>2× Quadro P5000 — 192.168.1.61]
-
-        subgraph LXC_INFRA["Infrastructure (3 CT)"]
-            CT_NPM[🔀 Nginx Proxy Manager — 118<br/>10.10.10.18]
-            CT_DOCKER[🐋 Docker Host — 112<br/>10.10.30.12]
-            CF[📡 Cloudflared — Host]
-        end
-
-        subgraph LXC_MEDIA["Média (3 CT)"]
-            CT_QBIT[⬇️ qBittorrent — 104<br/>10.10.20.10<br/>VPN Kill Switch]
-            CT_MEDIAHUB[🎬 Media Hub — 130<br/>10.10.20.30<br/>Radarr + Sonarr + Prowlarr]
-            CT_AGENTDVR[📹 AgentDVR — 123<br/>10.10.20.23]
-        end
-
-        subgraph LXC_DEV["Dev & Sécurité (4 CT)"]
-            CT_GITEA[🗂️ Gitea — 120<br/>10.10.20.20]
-            CT_VAULT[🔒 Vaultwarden — 114<br/>10.10.20.14]
-            CT_PORTFOLIO[🌐 Portfolio — 121<br/>10.10.30.21]
-            end
-
-        subgraph LXC_MON["Monitoring & Home (3 CT)"]
-            CT_GRAF[📈 Grafana — 115<br/>10.10.10.10]
-            CT_HB[🏡 Homebridge — 102<br/>10.10.20.102]
-            CT_COCKPIT[🖥️ Cockpit — accès via pve.lan:9090]
-        end
-
-        subgraph LXC_AI["IA / GPU (1 CT)"]
-            CT_INFER[🤖 Inference — 201<br/>10.10.40.10<br/>Ollama — 2× P5000]
-        end
-    end
-
-    subgraph STORAGE["💿 TrueNAS Scale — Stockage ZFS"]
-        NAS[🗄️ Pool Tank RAID 1<br/>932 GB Total — 661 GB Utilisés<br/>192.168.1.109]
-
-        subgraph DATASETS["📁 Datasets"]
-            DS_BACKUP[💾 Backups: 302 GB]
-            DS_FILM[🎬 Films: 183 GB]
-            DS_SERIES[📺 Séries: 82 GB]
-            DS_SHARE[📂 Share: 36 GB]
-            DS_DL[⬇️ Downloads: 49 GB]
-            DS_GIT[🗂️ Git: 2 GB]
-        end
-    end
-
-    DNS --> TUNNEL
-    WAF --> TUNNEL
-    ACCESS --> TUNNEL
-    TUNNEL ==>|Chiffré| ROUTER
-    ROUTER ==>|1 Gbit/s| PVE
-    ROUTER --> ADGUARD
-
-    PVE --> LXC_INFRA
-    PVE --> LXC_MEDIA
-    PVE --> LXC_DEV
-    PVE --> LXC_MON
-    PVE --> LXC_AI
-
-    NAS -.NFS.-> CT_MEDIAHUB
-    NAS -.NFS.-> CT_QBIT
-    NAS -.NFS.-> PVE
-    NAS --> DATASETS
-
-    CT_GRAF -.Métriques.-> PVE
-
-    style CLOUD fill:#f38020,stroke:#333,stroke-width:3px,color:#fff
-    style EDGE fill:#4caf50,stroke:#333,stroke-width:3px,color:#fff
-    style COMPUTE fill:#2196f3,stroke:#333,stroke-width:3px,color:#fff
-    style STORAGE fill:#9c27b0,stroke:#333,stroke-width:3px,color:#fff
-```
+| Catégorie | Détail | Statut / Métrique |
+|:---|:---|:---|
+| **Réseau** | Freebox Delta (FTTH) | **10 Gbps ↓** / **900 Mbps ↑** |
+| **Sécurité** | CrowdSec, Proxmox Firewall, AdGuard | **Actifs & Durcis** |
+| **Compute** | AMD Ryzen 5 5600X (6C/12T) / 32 GB RAM | ~20% d'utilisation RAM |
+| **GPU** | 2× NVIDIA Quadro P5000 (16 GB) | Allouées à l'IA (LXC 201) |
+| **Containers** | 12 LXC "Unprivileged" | Production 24/7 |
+| **Stockage** | ZFS Miroir (TrueNAS) | **661 GB** / 932 GB (70.9% utilisés) |
 
 ---
 
-## 📁 Services Exposés (Nginx Proxy Manager — 17 hôtes)
+## 🛡️ Sécurité & Isolation
 
-| Status | Domaine | Backend | SSL |
-|--------|---------|---------|-----|
-| 🟢 | ad.zorko.xyz | 192.168.1.189:80 | ✅ |
-| 🟢 | cockpit.zorko.xyz | 10.10.10.1:9090 | ✅ |
-| 🟢 | git.zorko.xyz | 10.10.20.20:3000 | ✅ |
-| 🟢 | grafana.zorko.xyz | 10.10.10.10:3000 | ✅ |
-| 🟢 | home.zorko.xyz | 10.10.20.102:8581 | ✅ |
-| 🟢 | kuma.zorko.xyz | 192.168.1.42:3001 | ✅ |
-| 🟢 | nas.zorko.xyz | 192.168.1.109:80 | ✅ |
-| 🟢 | npm.zorko.xyz | 10.10.10.18:81 | ✅ |
-| 🟢 | petio.zorko.xyz | 10.10.20.30:5055 | ✅ |
-| 🟢 | plex.zorko.xyz | 192.168.1.108:32400 | ✅ |
-| 🟢 | port.zorko.xyz | 10.10.30.12:9443 | ✅ |
-| 🟢 | prow.zorko.xyz | 10.10.20.30:9696 | ✅ |
-| 🟢 | pve.zorko.xyz | 10.10.10.1:8006 | ✅ |
-| 🟢 | qbit.zorko.xyz | 10.10.20.10:8090 | ✅ |
-| 🟢 | radarr.zorko.xyz | 10.10.20.30:7878 | ✅ |
-| 🟢 | sonarr.zorko.xyz | 10.10.20.30:8989 | ✅ |
-| 🟢 | vault.zorko.xyz | 10.10.20.14:8000 | ✅ |
+Le système a été conçu avec une approche **Zero-Trust** et "Défense en Profondeur" :
 
-> + 14 autres hôtes de dev/tests (CityClaw, Skynet, etc.)
-> DNS wildcard `*.zorko.xyz → 10.10.10.18` géré par AdGuard Home — NPM centralise tous les reverse proxy internes.
+1. **Aucun port entrant ouvert** sur le routeur. Tout le trafic externe transite via un **Tunnel Cloudflare**.
+2. **Isolation L2/L3** : Les conteneurs sont répartis dans des **VLANs stricts** gérés par le pare-feu natif de Proxmox.
+3. **Hardening Système** :
+   - Tous les conteneurs sont en mode **Unprivileged**.
+   - Permissions durcies sur les crons et fichiers sensibles (`/etc/shadow`).
+   - Protection contre l'IP Spoofing (`rp_filter` strict).
+4. **Active Defense** :
+   - **CrowdSec** bloque en temps réel les IPs malveillantes via des listes communautaires et `nftables`.
+   - **Fail2Ban** protège les accès SSH locaux.
 
 ---
 
-## 🎯 Points Forts Techniques
+## 🌐 Services Accessibles (NPM & Cloudflare)
 
-### Sécurité
-- ✅ **Zero-Trust Access** via Cloudflare Tunnel (aucun port ouvert sur Internet)
-- ✅ **AdGuard Home** (VM Freebox) — DNS filtrant avec DNSSEC, 6 listes actives
-- ✅ **Vaultwarden** (LXC 114) — admin token argon2id, inscriptions désactivées, backups sqlite3 automatiques
-- ✅ **qBittorrent VPN Kill Switch** — iptables OUTPUT DROP + bind tun0 (Windscribe)
-- ✅ **Firewall Proxmox** — règles Datacenter + Node, isolation VLAN stricte
-- ✅ **VLANs Dédiés** — Management (10), Apps (20), Dev (30), IA (40)
-- ✅ **CrowdSec** — Bouncer nftables (blocage communautaire massif)
-- ✅ **Containers Unprivileged** — permissions cron durcies et prévention IP spoofing
-- ✅ **WAF Cloudflare** avec protection DDoS intégrée
-- ✅ **Reverse Proxy SSL** centralisé (Nginx Proxy Manager)
+Plus de 31 services sont routés via Nginx Proxy Manager. Voici les principaux :
 
-### Virtualisation & Infrastructure
-- ✅ **12 conteneurs LXC** en production 24/7
-- ✅ **LXC 201 Inference** — Ollama avec 2× NVIDIA Quadro P5000 (GPU passthrough)
-- ✅ **Proxmox VE 9.1.9** sur Debian Trixie (kernel 7.0.0-3-pve)
-- ✅ **Monitoring** : Grafana + Uptime Kuma + Cockpit
+| Service | Endpoint Interne | Domaine | Accès |
+|:---|:---|:---|:---|
+| **Proxmox VE** | `10.10.10.1:8006` | `pve.zorko.xyz` | 🔒 LAN Only |
+| **TrueNAS** | `192.168.1.109:80` | `nas.zorko.xyz` | 🔒 LAN Only |
+| **Vaultwarden**| `10.10.20.14:8000` | `vault.zorko.xyz` | 🌍 Public (WAF Auth) |
+| **Gitea** | `10.10.20.20:3000` | `git.zorko.xyz` | 🌍 Public (WAF Auth) |
+| **Grafana** | `10.10.10.10:3000` | `grafana.zorko.xyz` | 🔒 LAN Only |
+| **Media Hub** | `10.10.20.30:xxxx` | `radarr.*`, `sonarr.*` | 🔒 LAN Only |
+| **qBittorrent**| `10.10.20.10:8090` | `qbit.zorko.xyz` | 🔒 LAN Only |
 
-### Stockage & Données
-- ✅ **ZFS RAID 1** (miroir) — 932 GB total, 70.9% utilisé
-- ✅ **NFS** pour stockage Proxmox (backups, médias, downloads)
-- ✅ **Snapshots ZFS automatiques** — quotidiens, rétention 14 jours
-- ✅ **Backups Proxmox vzdump** — hebdomadaires (dim. 01:00), 10 CTs, rétention 2
-
-### Réseau
-- ✅ **Freebox Delta** — FTTH 10 Gbps ↓ / 900 Mbps ↑ (FW 4.9.18.1)
-- ✅ **DNS AdGuard** avec DNSSEC et 1 077k règles de blocage
-- ✅ **Cloudflare DNS** zone zorko.xyz (Free plan)
+> *La résolution DNS interne (`*.zorko.xyz` -> `10.10.10.18`) est assurée par AdGuard Home.*
 
 ---
 
-## 📂 Documentation Détaillée
+## 📚 Documentation Détaillée
 
-- **[Architecture Réseau](./architecture/network.md)**
-- **[Stockage](./architecture/storage.md)**
-- **[Virtualisation](./architecture/virtualization.md)**
-- **[Compute](./hardware/compute.md)**
-- **[Hardware Storage](./hardware/storage.md)**
-- **[Hardware Réseau](./hardware/network.md)**
-- **[Sécurité](./security/access_control.md)**
-- **[Cloudflare Zero Trust](./security/cloudflare_zero_trust.md)**
-- **[Backups](./automation/backups.md)**
+Explorez les spécifications techniques de chaque brique de l'infrastructure :
 
----
+### 🏛️ Architecture logicielle
+- [Virtualisation (Proxmox & LXC)](./architecture/virtualization.md)
+- [Stockage & ZFS](./architecture/storage.md)
+- [Réseau & VLANs](./architecture/network.md)
 
-## 🛠️ Technologies Utilisées
+### 💻 Matériel
+- [Serveurs de Calcul (Compute)](./hardware/compute.md)
+- [Nœud de Stockage (NAS)](./hardware/storage.md)
+- [Équipements Réseau](./hardware/network.md)
 
-**Virtualisation & Conteneurs**
-- Proxmox VE 9.1.9 (LXC + QEMU/KVM) sur Debian Trixie
-- Docker dans LXC dédié (112)
-- Ollama (LXC 201 avec GPU passthrough 2× P5000)
-
-**Stockage**
-- TrueNAS Scale — ZFS RAID 1, compression LZ4
-
-**Réseau & Sécurité**
-- Cloudflare Zero Trust (Tunnel + DNS + Access)
-- AdGuard Home (VM Freebox) — DNS filtrant + DNSSEC
-- Nginx Proxy Manager — reverse proxy SSL
-- WireGuard VPN (intégré Freebox)
-- iptables kill switch VPN (qBittorrent)
-
-**Services Applicatifs**
-- Stack Média : Radarr, Sonarr, Prowlarr, qBittorrent, Plex
-- Gitea (Git auto-hébergé)
-- Vaultwarden (gestionnaire de mots de passe)
-- Homebridge (HomeKit)
-- Grafana + Uptime Kuma (monitoring)
-- AgentDVR (surveillance vidéo)
-
----
-
-**Dernière mise à jour** : 2026-04-14
-**Données récupérées en direct** : APIs Proxmox, TrueNAS, NPM, Cloudflare, Freebox Delta, AdGuard
+### 🔐 Sécurité & Automatisation
+- [Règles Pare-feu & Contrôle d'Accès](./security/access_control.md)
+- [Cloudflare Zero Trust](./security/cloudflare_zero_trust.md)
+- [Stratégie de Sauvegarde](./automation/backups.md)

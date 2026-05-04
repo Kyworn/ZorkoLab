@@ -1,112 +1,36 @@
-# Sécurité : Contrôle d'Accès
+# Pare-Feu et Contrôle d'Accès
 
-Couches de sécurité du homelab — de l'accès externe aux services internes.
+Le réseau est sécurisé en interne par le **Pare-feu natif de Proxmox** (remplaçant UFW) et la protection dynamique **CrowdSec**.
 
-## Vue d'Ensemble
+## 1. Pare-feu Proxmox (PVE Firewall)
 
-```mermaid
-graph LR
-    A[🌐 Internet] -->|Zero Trust| B[☁️ Cloudflare Access]
-    B -->|OTP Email| C[🔒 Tunnel zserv]
-    C --> D[📡 Cloudflared CT110]
-    D --> E[🔀 NPM CT118]
-    E --> F[🎯 Services]
+Géré au niveau du **Datacenter** et du **Nœud**, il bloque par défaut les connexions inter-VLANs.
 
-    G[🏠 LAN] -->|WireGuard VPN| H[🔐 Accès direct]
-    H --> I[⚙️ Proxmox SSH/API]
-    H --> F
-```
+### Règles d'Hôte (Host Firewall)
+| Direction | Protocole | Port | Source | Action |
+|:---|:---|:---|:---|:---|
+| IN | TCP | `8006` (WebUI) | `192.168.1.0/24` (LAN) | **ACCEPT** |
+| IN | TCP | `22` (SSH) | `192.168.1.0/24` (LAN) | **ACCEPT** |
+| IN | TCP | `80`, `443` | *Any* | **ACCEPT** (Pour NPM) |
+| IN | - | *All* | *Any* | **DROP** |
 
----
+### Routage Inter-VLAN
+Pour que le Reverse Proxy (NPM) puisse atteindre les services sans ouvrir le pare-feu global, le conteneur **Nginx Proxy Manager** dispose d'une interface réseau virtuelle (eth1, eth2...) dans **chaque VLAN**. Cela évite le routage inter-VLANs au niveau de l'hôte.
 
-## 1. Accès Externe — Cloudflare Zero Trust
+## 2. Défense Active : CrowdSec & Fail2Ban
 
-Aucun port ouvert sur la Freebox. Tout le trafic externe transite par Cloudflare Tunnel.
+### CrowdSec
+- Bouncer configuré sur `nftables`.
+- Liste blanche locale (`192.168.1.0/24`, `10.10.0.0/16`) pour éviter un auto-bannissement.
+- **Statut actuel :** Plusieurs milliers d'adresses IP bloquées en temps réel grâce à la base de données collaborative.
 
-| Aspect | Configuration |
-|--------|--------------|
-| **Tunnel** | `zserv` — 8 connexions simultanées CDG |
-| **Auth** | Email OTP — session 24h |
-| **WAF** | Actif — DDoS Layer 3/4 automatique |
-| **Services protégés** | send.zorko.xyz, pdf.zorko.xyz, vault.zorko.xyz |
-| **Wildcard DNS** | *.zorko.xyz → [IP publique] (Cloudflare proxied) |
+### Fail2Ban
+- Surveille activement le démon `sshd` de l'hôte.
+- **Politique :** 3 échecs = Bannissement de 24 heures.
 
-## 2. DNS Filtrant — AdGuard Home
+## 3. Sécurité du Conteneur qBittorrent (VPN Kill Switch)
 
-| Aspect | Configuration |
-|--------|--------------|
-| **IP** | 192.168.1.189:80 (VM Freebox) |
-| **DNSSEC** | ✅ Activé |
-| **Upstream** | Cloudflare DoH + Google DoH + Quad9 DoH |
-| **Règles** | 1 077 000+ (6 listes consolidées) |
-| **Wildcard LAN** | *.zorko.xyz → 10.10.10.18 (NPM) |
-| **Stats rétention** | 7 jours |
-
-## 3. Vaultwarden — Gestion Secrets
-
-| Aspect | Configuration |
-|--------|--------------|
-| **LXC** | 114 — 10.10.20.14 |
-| **Admin token** | Argon2id hash (m=65536, t=3, p=4) |
-| **Inscriptions** | ❌ Désactivées (`signups_allowed: false`) |
-| **Backup** | ✅ Automatique — sqlite3 daily, 30j rétention |
-| **Accès admin** | vault.zorko.xyz/admin (LAN + Cloudflare) |
-
-## 4. qBittorrent — VPN Kill Switch
-
-| Aspect | Configuration |
-|--------|--------------|
-| **LXC** | 104 — 10.10.20.10 |
-| **VPN** | Windscribe OpenVPN (tun0) |
-| **Kill switch** | iptables OUTPUT DROP — exceptions: lo, established, LAN, udp/tcp 443, tun0 |
-| **Binding** | Interface=tun0 (WebUI coupe si VPN down) |
-| **Service** | Démarrage conditionné à openvpn-windscribe.service |
-
-```
-iptables OUTPUT policy: DROP
-  - loopback → ACCEPT
-  - established/related → ACCEPT
-  - 192.168.1.0/24 → ACCEPT
-  - eth0:443 tcp/udp → ACCEPT (négociation VPN)
-  - tun0 → ACCEPT (tout le trafic sortant via VPN)
-```
-
-## 5. Firewall Proxmox
-
-| Règle | Port | Source | Action |
-|-------|------|--------|--------|
-| Cockpit Web UI | 9090 | 192.168.1.0/24 | ACCEPT |
-| SSH | 22 | LAN | ACCEPT (clé uniquement) |
-| PVE Web | 8006 | LAN | ACCEPT |
-| WireGuard* | 51820 | — | Supprimée (orpheline) |
-
-> *La règle WireGuard 51820 a été supprimée lors de l'audit — WireGuard est géré par la Freebox, pas Proxmox.
-
-## 6. Accès SSH
-
-| Système | Méthode | Notes |
-|---------|---------|-------|
-| Proxmox (192.168.1.61) | Clé publique uniquement | root@pam + API token |
-| LXC → via `pct exec <id>` | Depuis host Proxmox | Pas de SSH direct aux LXC |
-| TrueNAS | API Bearer token | Pas de SSH direct en prod |
-
-## 7. Matrice d'Accès Services
-
-| Service | LAN | Internet | Auth | Port |
-|---------|-----|----------|------|------|
-| Vaultwarden | ✅ | ✅ CF | Admin token argon2id | 8000 |
-| Gitea | ✅ | ✅ CF | Compte utilisateur | 3000 |
-| Proxmox | ✅ | ❌ | PVE API token / SSH key | 8006 |
-| NPM Admin | ✅ | ❌ | Email + mot de passe | 81 |
-| Radarr | ✅ | ❌ | API key (LAN only) | 7878 |
-| Sonarr | ✅ | ❌ | API key (LAN only) | 8989 |
-| qBittorrent | ✅ | ❌ | Basic auth | 8090 |
-| AdGuard | ✅ | ❌ | Session cookie | 80 |
-| Grafana | ✅ | ❌ | Auth Grafana | 3000 |
-| TrueNAS | ✅ | ❌ | API Bearer token | 80/443 |
-| Cockpit | ✅ | ❌ | PAM root | 9090 |
-
----
-
-**Dernière mise à jour** : 2026-04-14
-**Audit réalisé** : 2026-04-14 — Proxmox, NPM, Vaultwarden, qBittorrent, AdGuard
+Pour éviter toute fuite IP (DNS/Traffic leak), le conteneur 104 est verrouillé via `iptables` en interne :
+- Politique `OUTPUT DROP` par défaut.
+- Autorise uniquement le trafic vers l'interface `tun0` (Tunnel WireGuard/OpenVPN).
+- Autorise les réponses au réseau local (LAN).

@@ -1,58 +1,44 @@
 # Matériel : Serveurs de Calcul
 
-Ce document liste le matériel physique utilisé pour l'hébergement des machines virtuelles et des conteneurs.
+Ce document inventorie le matériel physique de l'hyperviseur Proxmox.
 
-## Serveur Proxmox VE
+## Nœud Proxmox VE (Compute)
 
-| Composant | Modèle / Spécification | Notes |
-|-----------|------------------------|-------|
-| **CPU** | AMD Ryzen 5 5600X | 6 cores / 12 threads — jusqu'à 4.6 GHz |
-| **RAM** | 32 GB DDR4 | ~6.4 GB utilisés en prod |
-| **Châssis** | Corsair 680X | Tour ATX |
-| **GPU** | 2× NVIDIA Quadro P5000 | 16 GB VRAM chacune — passthrough vers LXC 201 |
-| **OS** | Proxmox VE 9.1.9 | Debian Trixie (13), kernel 7.0.0-3-pve |
-| **Stockage OS** | 512 GB NVMe (nvme-biwin) | LVM-thin, 71% utilisé |
-| **IP** | 10.10.10.1:8006 | |
-| **Uptime** | ~9 jours | Stable |
+| Spécification | Détail |
+|:---|:---|
+| **CPU** | AMD Ryzen 5 5600X (6 cœurs / 12 threads, jusqu'à 4.6 GHz) |
+| **RAM** | 32 GB DDR4 |
+| **Châssis** | Corsair 680X (Tour ATX) |
+| **Accélération Matérielle** | 2× NVIDIA Quadro P5000 (16 GB VRAM chacune) — PCI Passthrough |
+| **Stockage OS** | 512 GB NVMe SSD (LVM-thin) |
+| **Système d'Exploitation** | Proxmox VE 9.1.9 (Debian Trixie 13) |
+| **Noyau (Kernel)** | 7.0.0-3-pve |
+| **Réseau** | IP: `10.10.10.1` (VLAN 10) |
 
-## Charges de Travail sur Proxmox
+## Allocation des Ressources (LXC)
 
-### Conteneurs LXC (12 actifs)
+*Tous les conteneurs sont configurés en mode "Unprivileged" (sauf LXC 201).*
 
-| CT | Nom | IP | Rôle |
-|----|-----|----|------|
-| 102 | homebridge | 10.10.20.102 | Domotique HomeKit |
-| 104 | qbittorrent | 10.10.20.10 | Client torrent (VPN Windscribe, kill switch) |
-| 112 | docker | 10.10.30.12 | Hôte Docker (Portainer) |
-| 113 | passbolt | — | Gestionnaire de mots de passe équipe (stopped) |
-| 114 | vaultwarden | 10.10.20.14 | Gestionnaire de mots de passe personnel |
-| 115 | grafana | 10.10.10.10 | Monitoring / métriques |
-| 118 | nginxproxymanager | 10.10.10.18 | Reverse proxy SSL |
-| 120 | gitea | 10.10.20.20 | Git auto-hébergé |
-| 121 | portfolio | 10.10.30.21 | Site portfolio |
-| 123 | agentdvr | 10.10.20.23 | Surveillance vidéo |
-| 130 | media-hub | 10.10.20.30 | Radarr + Sonarr + Prowlarr + Petio |
-| 201 | inference | 10.10.40.10 | Ollama (2× P5000 GPU) |
+| ID | Application | IP | VLAN | Ressources Spécifiques |
+|:---|:---|:---|:---|:---|
+| **102** | Homebridge | `10.10.20.102` | Apps | - |
+| **104** | qBittorrent | `10.10.20.10` | Apps | Kill Switch iptables |
+| **112** | Docker Host | `10.10.30.12` | Dev | Nested Virtualization |
+| **114** | Vaultwarden | `10.10.20.14` | Apps | - |
+| **115** | Grafana | `10.10.10.10` | Mgmt | - |
+| **118** | Nginx Proxy Manager | `10.10.10.18` | Mgmt | Interfaces eth1, eth2, eth3 |
+| **120** | Gitea | `10.10.20.20` | Apps | - |
+| **121** | Portfolio | `10.10.30.21` | Dev | - |
+| **123** | AgentDVR | `10.10.20.23` | Apps | - |
+| **130** | Media-Hub | `10.10.20.30` | Apps | - |
+| **201** | Inference (Ollama) | `10.10.40.10` | IA | **2x GPU Quadro P5000** |
+| **202** | Jarvis (Hermes) | `10.10.10.20` | Mgmt | - |
 
-### Machines Virtuelles
+## Points de Montage Proxmox (LVM & NFS)
 
-| VM | Nom | Statut | Usage |
-|----|-----|--------|-------|
-| 9000 | debian12-cloudinit | stopped | Template cloud-init |
-
-### Stockage Proxmox
-
-| Volume | Type | Taille | Utilisation |
-|--------|------|--------|-------------|
-| local | dir | 203 GB | 17.3% (OS + ISOs) |
-| nvme-biwin-storage | LVM-thin | 284 GB | 71.1% (disques LXC/VM) |
-| Backup (NFS TrueNAS) | nfs | 470 GB | 39.5% |
-| Film (NFS TrueNAS) | nfs | 477 GB | 40.4% |
-| Series (NFS TrueNAS) | nfs | 371 GB | 23.3% |
-| Download (NFS TrueNAS) | nfs | 336 GB | 15.4% |
-| gitea (NFS TrueNAS) | nfs | 286 GB | 0.6% |
-
----
-
-**Dernière mise à jour** : 2026-04-14
-**Données récupérées via** : API Proxmox + SSH
+| Volume | Type | Utilisation |
+|:---|:---|:---|
+| `local` | Répertoire | Stockage ISOs et Templates |
+| `nvme-biwin-storage` | LVM-thin | Disques racines des LXC / VM |
+| `Backup` | NFS | Monté depuis TrueNAS (VZDump) |
+| `Film`, `Series`, `Download` | NFS | Montés depuis TrueNAS (Médias) |

@@ -28,11 +28,11 @@ graph TD
     end
 
     subgraph Network ["🏠 Réseau Domestique (Freebox Delta 10G)"]
-        ADG["🛡️ AdGuard Home<br/>(DNS Filtrant + DNSSEC)"]:::lxc
+        ADG["🛡️ AdGuard Home VM<br/>(DNS Filtrant + DNSSEC)"]:::lxc
+        CF_TUN["🔒 Cloudflared Tunnel<br/>(Hébergé dans la VM AdGuard)"]:::lxc
     end
 
     subgraph Proxmox ["⚙️ Proxmox VE (Compute Node) — 192.168.1.61"]
-        CF_TUN["🔒 Cloudflared Tunnel<br/>(Host Daemon)"]:::pve
 
         subgraph VLAN10 ["🟦 VLAN 10 : Management (10.10.10.x)"]
             NPM["🔀 Nginx Proxy Manager (118)"]:::lxc

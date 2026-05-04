@@ -1,6 +1,6 @@
 # Architecture de Virtualisation
 
-Ce document présente l'organisation des conteneurs LXC et des machines virtuelles sur l'hyperviseur Proxmox VE 9.1.7.
+Ce document présente l'organisation des conteneurs LXC et des machines virtuelles sur l'hyperviseur Proxmox VE 9.1.9.
 
 L'utilisation quasi-exclusive de conteneurs LXC vise à optimiser l'utilisation des ressources — une VM K3s est remplacée par des services conteneurisés plus légers.
 
@@ -8,7 +8,7 @@ L'utilisation quasi-exclusive de conteneurs LXC vise à optimiser l'utilisation 
 
 ```mermaid
 graph TD
-    subgraph PVE["⚙️ Proxmox VE 9.1.7 — Debian Trixie — 192.168.1.61"]
+    subgraph PVE["⚙️ Proxmox VE 9.1.9 — Debian Trixie — 192.168.1.61"]
 
         subgraph INFRA["🔀 Infrastructure"]
             CT118[NPM — 118<br/>10.10.10.18]
@@ -65,7 +65,7 @@ graph TD
 | 113 | passbolt | — | 🔴 stopped | Gestionnaire de mots de passe équipe (désactivé) |
 | 114 | vaultwarden | 10.10.20.14 | 🟢 running | Bitwarden auto-hébergé — admin token argon2id |
 | 115 | grafana | 10.10.10.10 | 🟢 running | Dashboards métriques Proxmox/système |
-| 118 | nginxproxymanager | 10.10.10.18 | 🟢 running | Reverse proxy SSL — 17 hôtes proxy actifs |
+| 118 | nginxproxymanager | 10.10.10.18 | 🟢 running | Reverse proxy SSL — 31 hôtes proxy actifs |
 | 120 | gitea | 10.10.20.20 | 🟢 running | Forge Git auto-hébergée |
 | 121 | portfolio | 10.10.30.21 | 🟢 running | Site portfolio personnel |
 | 123 | agentdvr | 10.10.20.23 | 🟢 running | Surveillance vidéo (Agent DVR) |

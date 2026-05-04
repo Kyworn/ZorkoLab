@@ -2,9 +2,9 @@
 
 > Infrastructure auto-hébergée complète avec virtualisation, stockage ZFS, et accès sécurisé via Cloudflare Zero Trust
 
-![Proxmox](https://img.shields.io/badge/Proxmox-VE_9.1.7-E57000?logo=proxmox&logoColor=white)
+![Proxmox](https://img.shields.io/badge/Proxmox-VE_9.1.9-E57000?logo=proxmox&logoColor=white)
 ![Debian](https://img.shields.io/badge/Debian-Trixie_13-A81D33?logo=debian&logoColor=white)
-![TrueNAS](https://img.shields.io/badge/TrueNAS-Scale-0095D5?logo=truenas&logoColor=white)
+![TrueNAS](https://img.shields.io/badge/TrueNAS-Scale_26.0.0--BETA.1-0095D5?logo=truenas&logoColor=white)
 ![Cloudflare](https://img.shields.io/badge/Cloudflare-Zero_Trust-F38020?logo=cloudflare&logoColor=white)
 ![ZFS](https://img.shields.io/badge/ZFS-RAID1-00979D?logo=openzfs&logoColor=white)
 ![LXC](https://img.shields.io/badge/LXC-12_Conteneurs-success)
@@ -23,7 +23,7 @@
 | **Capacité Stockage** | 932 GB | 661 GB utilisés (70.9%) — 271 GB libres |
 | **RAM Proxmox** | 32 GB DDR4 | ~6.4 GB utilisés (19.5%) |
 | **CPU Hyperviseur** | AMD Ryzen 5 5600X | 6 cores / 12 threads — Corsair 680X |
-| **Uptime Proxmox** | 9+ jours | PVE 9.1.7 / kernel 6.17.4-2-pve |
+| **Uptime Proxmox** | 9+ jours | PVE 9.1.7 / kernel 7.0.0-3-pve |
 | **Freebox Delta** | FW 4.9.18.1 | Uptime: 10 jours — 10 Gbps ↓ / 900 Mbps ↑ |
 
 ### Répartition du Stockage TrueNAS (Tank — 661 GB / 932 GB)
@@ -51,7 +51,7 @@ graph LR
     B -->|WAF + DDoS Protection| C{🔐 Access Control}
     C -->|✅ Authentifié| D[🔒 Tunnel zserv]
     C -->|❌ Bloqué| E[⛔ Access Denied]
-    D -->|Connexions HA| F[📡 Cloudflared LXC 110]
+    D -->|Connexions HA| F[📡 Cloudflared (PVE Host)]
     F -->|Reverse Proxy| G[🔀 Nginx Proxy Manager LXC 118]
     G -->|Route vers| H[🎯 Services LXC]
 
@@ -80,13 +80,13 @@ graph TB
         ADGUARD[🛡️ AdGuard Home VM<br/>192.168.1.189<br/>DNS filtrant + DNSSEC]
     end
 
-    subgraph COMPUTE["💻 Proxmox VE 9.1.7 — Debian Trixie"]
+    subgraph COMPUTE["💻 Proxmox VE 9.1.9 — Debian Trixie"]
         PVE[⚙️ AMD Ryzen 5 5600X<br/>6C/12T — 32 GB RAM — Corsair 680X<br/>2× Quadro P5000 — 192.168.1.61]
 
         subgraph LXC_INFRA["Infrastructure (3 CT)"]
             CT_NPM[🔀 Nginx Proxy Manager — 118<br/>10.10.10.18]
             CT_DOCKER[🐋 Docker Host — 112<br/>10.10.30.12]
-            CT_CF[📡 Cloudflared — 110]
+            CF[📡 Cloudflared — Host]
         end
 
         subgraph LXC_MEDIA["Média (3 CT)"]
@@ -99,8 +99,7 @@ graph TB
             CT_GITEA[🗂️ Gitea — 120<br/>10.10.20.20]
             CT_VAULT[🔒 Vaultwarden — 114<br/>10.10.20.14]
             CT_PORTFOLIO[🌐 Portfolio — 121<br/>10.10.30.21]
-            CT_PB[🔐 Passbolt — 113<br/>stopped]
-        end
+            end
 
         subgraph LXC_MON["Monitoring & Home (3 CT)"]
             CT_GRAF[📈 Grafana — 115<br/>10.10.10.10]
@@ -176,6 +175,7 @@ graph TB
 | 🟢 | sonarr.zorko.xyz | 10.10.20.30:8989 | ✅ |
 | 🟢 | vault.zorko.xyz | 10.10.20.14:8000 | ✅ |
 
+> + 14 autres hôtes de dev/tests (CityClaw, Skynet, etc.)
 > DNS wildcard `*.zorko.xyz → 10.10.10.18` géré par AdGuard Home — NPM centralise tous les reverse proxy internes.
 
 ---
@@ -197,7 +197,7 @@ graph TB
 ### Virtualisation & Infrastructure
 - ✅ **12 conteneurs LXC** en production 24/7
 - ✅ **LXC 201 Inference** — Ollama avec 2× NVIDIA Quadro P5000 (GPU passthrough)
-- ✅ **Proxmox VE 9.1.7** sur Debian Trixie (kernel 6.17.4-2-pve)
+- ✅ **Proxmox VE 9.1.9** sur Debian Trixie (kernel 7.0.0-3-pve)
 - ✅ **Monitoring** : Grafana + Uptime Kuma + Cockpit
 
 ### Stockage & Données
@@ -230,7 +230,7 @@ graph TB
 ## 🛠️ Technologies Utilisées
 
 **Virtualisation & Conteneurs**
-- Proxmox VE 9.1.7 (LXC + QEMU/KVM) sur Debian Trixie
+- Proxmox VE 9.1.9 (LXC + QEMU/KVM) sur Debian Trixie
 - Docker dans LXC dédié (112)
 - Ollama (LXC 201 avec GPU passthrough 2× P5000)
 

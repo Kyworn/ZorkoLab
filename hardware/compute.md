@@ -10,7 +10,7 @@ Ce document liste le matériel physique utilisé pour l'hébergement des machine
 | **RAM** | 32 GB DDR4 | ~6.4 GB utilisés en prod |
 | **Châssis** | Corsair 680X | Tour ATX |
 | **GPU** | 2× NVIDIA Quadro P5000 | 16 GB VRAM chacune — passthrough vers LXC 201 |
-| **OS** | Proxmox VE 9.1.7 | Debian Trixie (13), kernel 6.17.4-2-pve |
+| **OS** | Proxmox VE 9.1.9 | Debian Trixie (13), kernel 7.0.0-3-pve |
 | **Stockage OS** | 512 GB NVMe (nvme-biwin) | LVM-thin, 71% utilisé |
 | **IP** | 10.10.10.1:8006 | |
 | **Uptime** | ~9 jours | Stable |

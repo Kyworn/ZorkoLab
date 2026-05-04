@@ -26,7 +26,7 @@ graph LR
     C -->|Authentifié| D[Tunnel 'zserv']
     C -->|Refusé| E[Accès Bloqué]
     D --> F[Cloudflared CT 110]
-    F --> G[Nginx Proxy Manager<br/>192.168.1.186]
+    F --> G[Nginx Proxy Manager<br/>10.10.10.18]
     G --> H[Services Internes]
 
     style C fill:#f9a825

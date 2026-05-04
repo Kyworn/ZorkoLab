@@ -26,14 +26,14 @@ graph TD
 
     subgraph PVE["⚙️ Proxmox — 192.168.1.61"]
         CT110[Cloudflared — CT110]
-        CT118[Nginx Proxy Manager<br/>CT118 — 192.168.1.186]
+        CT118[Nginx Proxy Manager<br/>CT118 — 10.10.10.18]
 
         subgraph SERVICES["Services LXC"]
-            CT130[Media Hub — 192.168.1.51<br/>Radarr · Sonarr · Prowlarr]
-            CT104[qBittorrent — 192.168.1.52]
-            CT114[Vaultwarden — 192.168.1.110]
-            CT120[Gitea — 192.168.1.93]
-            CT115[Grafana — 192.168.1.194]
+            CT130[Media Hub — 10.10.20.30<br/>Radarr · Sonarr · Prowlarr]
+            CT104[qBittorrent — 10.10.20.10]
+            CT114[Vaultwarden — 10.10.20.14]
+            CT120[Gitea — 10.10.20.20]
+            CT115[Grafana — 10.10.10.10]
             CT_AUTRES[... autres services]
         end
     end
@@ -46,7 +46,7 @@ graph TD
 
     %% Flux interne via NPM
     U_INT -->|"*.zorko.xyz"| AG_VM
-    AG_VM -->|"wildcard → 192.168.1.186"| CT118
+    AG_VM -->|"wildcard → 10.10.10.18"| CT118
 
     %% Routage NPM
     CT118 --> CT130 & CT104 & CT114 & CT120 & CT115 & CT_AUTRES
@@ -67,7 +67,7 @@ graph TD
 ### Flux Interne (LAN → AdGuard → NPM)
 
 1. L'utilisateur sur le LAN accède à `radarr.zorko.xyz`
-2. **AdGuard Home** (DNS Freebox) résout `*.zorko.xyz → 192.168.1.186` (wildcard)
+2. **AdGuard Home** (DNS Freebox) résout `*.zorko.xyz → 10.10.10.18` (wildcard)
 3. **NPM** reçoit la requête, termine le SSL, route vers le service interne
 4. Accès direct au service sans passer par Cloudflare
 
@@ -81,22 +81,22 @@ graph TD
 | Domaine | Backend | Accessible depuis |
 |---------|---------|-------------------|
 | ad.zorko.xyz | 192.168.1.189:80 | LAN only |
-| cockpit.zorko.xyz | 192.168.1.61:9090 | LAN only |
-| git.zorko.xyz | 192.168.1.93:3000 | LAN + Cloudflare |
-| grafana.zorko.xyz | 192.168.1.194:3000 | LAN only |
-| home.zorko.xyz | 192.168.1.13:8581 | LAN only |
+| cockpit.zorko.xyz | 10.10.10.1:9090 | LAN only |
+| git.zorko.xyz | 10.10.20.20:3000 | LAN + Cloudflare |
+| grafana.zorko.xyz | 10.10.10.10:3000 | LAN only |
+| home.zorko.xyz | 10.10.20.102:8581 | LAN only |
 | kuma.zorko.xyz | 192.168.1.42:3001 | LAN only |
 | nas.zorko.xyz | 192.168.1.109:80 | LAN only |
-| npm.zorko.xyz | 192.168.1.186:81 | LAN only |
-| petio.zorko.xyz | 192.168.1.51:5055 | LAN + Cloudflare |
+| npm.zorko.xyz | 10.10.10.18:81 | LAN only |
+| petio.zorko.xyz | 10.10.20.30:5055 | LAN + Cloudflare |
 | plex.zorko.xyz | 192.168.1.108:32400 | LAN + Cloudflare |
-| port.zorko.xyz | 192.168.1.62:9443 | LAN only |
-| prow.zorko.xyz | 192.168.1.51:9696 | LAN only |
-| pve.zorko.xyz | 192.168.1.61:8006 | LAN only |
-| qbit.zorko.xyz | 192.168.1.52:8090 | LAN only |
-| radarr.zorko.xyz | 192.168.1.51:7878 | LAN only |
-| sonarr.zorko.xyz | 192.168.1.51:8989 | LAN only |
-| vault.zorko.xyz | 192.168.1.110:8000 | LAN + Cloudflare |
+| port.zorko.xyz | 10.10.30.12:9443 | LAN only |
+| prow.zorko.xyz | 10.10.20.30:9696 | LAN only |
+| pve.zorko.xyz | 10.10.10.1:8006 | LAN only |
+| qbit.zorko.xyz | 10.10.20.10:8090 | LAN only |
+| radarr.zorko.xyz | 10.10.20.30:7878 | LAN only |
+| sonarr.zorko.xyz | 10.10.20.30:8989 | LAN only |
+| vault.zorko.xyz | 10.10.20.14:8000 | LAN + Cloudflare |
 
 ---
 

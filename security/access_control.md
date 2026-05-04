@@ -39,14 +39,14 @@ Aucun port ouvert sur la Freebox. Tout le trafic externe transite par Cloudflare
 | **DNSSEC** | ✅ Activé |
 | **Upstream** | Cloudflare DoH + Google DoH + Quad9 DoH |
 | **Règles** | 1 077 000+ (6 listes consolidées) |
-| **Wildcard LAN** | *.zorko.xyz → 192.168.1.186 (NPM) |
+| **Wildcard LAN** | *.zorko.xyz → 10.10.10.18 (NPM) |
 | **Stats rétention** | 7 jours |
 
 ## 3. Vaultwarden — Gestion Secrets
 
 | Aspect | Configuration |
 |--------|--------------|
-| **LXC** | 114 — 192.168.1.110 |
+| **LXC** | 114 — 10.10.20.14 |
 | **Admin token** | Argon2id hash (m=65536, t=3, p=4) |
 | **Inscriptions** | ❌ Désactivées (`signups_allowed: false`) |
 | **Backup** | ✅ Automatique — sqlite3 daily, 30j rétention |
@@ -56,7 +56,7 @@ Aucun port ouvert sur la Freebox. Tout le trafic externe transite par Cloudflare
 
 | Aspect | Configuration |
 |--------|--------------|
-| **LXC** | 104 — 192.168.1.52 |
+| **LXC** | 104 — 10.10.20.10 |
 | **VPN** | Windscribe OpenVPN (tun0) |
 | **Kill switch** | iptables OUTPUT DROP — exceptions: lo, established, LAN, udp/tcp 443, tun0 |
 | **Binding** | Interface=tun0 (WebUI coupe si VPN down) |

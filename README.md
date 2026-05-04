@@ -92,7 +92,7 @@ graph TB
         subgraph LXC_MEDIA["Média (3 CT)"]
             CT_QBIT[⬇️ qBittorrent — 104<br/>10.10.20.10<br/>VPN Kill Switch]
             CT_MEDIAHUB[🎬 Media Hub — 130<br/>10.10.20.30<br/>Radarr + Sonarr + Prowlarr]
-            CT_AGENTDVR[📹 AgentDVR — 123<br/>192.168.1.39]
+            CT_AGENTDVR[📹 AgentDVR — 123<br/>10.10.20.23]
         end
 
         subgraph LXC_DEV["Dev & Sécurité (4 CT)"]

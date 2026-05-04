@@ -43,7 +43,7 @@ Infrastructure réseau basée sur une connexion fibre optique FTTH 10 Gbit/s ave
 | **DNSSEC** | ✅ Activé |
 | **Upstream DNS** | Cloudflare DoH, Google DoH, Quad9 DoH |
 | **Stats** | 7 jours de rétention |
-| **DNS wildcard** | *.zorko.xyz → 192.168.1.186 (NPM) |
+| **DNS wildcard** | *.zorko.xyz → 10.10.10.18 (NPM) |
 
 ### Listes de Blocage Actives
 
@@ -71,7 +71,7 @@ graph TD
     SW --> PVE[⚙️ Proxmox VE<br/>192.168.1.61]
     SW --> TN[💿 TrueNAS<br/>192.168.1.109]
     SW --> CLI[💻 Clients LAN]
-    PVE --> |LXC 118| NPM[🔀 NPM<br/>192.168.1.186]
+    PVE --> |LXC 118| NPM[🔀 NPM<br/>10.10.10.18]
     AG -.DNS wildcard.-> NPM
 ```
 

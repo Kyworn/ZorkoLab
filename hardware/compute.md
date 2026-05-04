@@ -12,7 +12,7 @@ Ce document liste le matériel physique utilisé pour l'hébergement des machine
 | **GPU** | 2× NVIDIA Quadro P5000 | 16 GB VRAM chacune — passthrough vers LXC 201 |
 | **OS** | Proxmox VE 9.1.7 | Debian Trixie (13), kernel 6.17.4-2-pve |
 | **Stockage OS** | 512 GB NVMe (nvme-biwin) | LVM-thin, 71% utilisé |
-| **IP** | 192.168.1.61:8006 | |
+| **IP** | 10.10.10.1:8006 | |
 | **Uptime** | ~9 jours | Stable |
 
 ## Charges de Travail sur Proxmox
@@ -21,18 +21,18 @@ Ce document liste le matériel physique utilisé pour l'hébergement des machine
 
 | CT | Nom | IP | Rôle |
 |----|-----|----|------|
-| 102 | homebridge | 192.168.1.13 | Domotique HomeKit |
-| 104 | qbittorrent | 192.168.1.52 | Client torrent (VPN Windscribe, kill switch) |
-| 112 | docker | 192.168.1.62 | Hôte Docker (Portainer) |
+| 102 | homebridge | 10.10.20.102 | Domotique HomeKit |
+| 104 | qbittorrent | 10.10.20.10 | Client torrent (VPN Windscribe, kill switch) |
+| 112 | docker | 10.10.30.12 | Hôte Docker (Portainer) |
 | 113 | passbolt | — | Gestionnaire de mots de passe équipe (stopped) |
-| 114 | vaultwarden | 192.168.1.110 | Gestionnaire de mots de passe personnel |
-| 115 | grafana | 192.168.1.194 | Monitoring / métriques |
-| 118 | nginxproxymanager | 192.168.1.186 | Reverse proxy SSL |
-| 120 | gitea | 192.168.1.93 | Git auto-hébergé |
-| 121 | portfolio | 192.168.1.155 | Site portfolio |
-| 123 | agentdvr | 192.168.1.39 | Surveillance vidéo |
-| 130 | media-hub | 192.168.1.51 | Radarr + Sonarr + Prowlarr + Petio |
-| 201 | inference | 192.168.1.11 | Ollama (2× P5000 GPU) |
+| 114 | vaultwarden | 10.10.20.14 | Gestionnaire de mots de passe personnel |
+| 115 | grafana | 10.10.10.10 | Monitoring / métriques |
+| 118 | nginxproxymanager | 10.10.10.18 | Reverse proxy SSL |
+| 120 | gitea | 10.10.20.20 | Git auto-hébergé |
+| 121 | portfolio | 10.10.30.21 | Site portfolio |
+| 123 | agentdvr | 10.10.20.23 | Surveillance vidéo |
+| 130 | media-hub | 10.10.20.30 | Radarr + Sonarr + Prowlarr + Petio |
+| 201 | inference | 10.10.40.10 | Ollama (2× P5000 GPU) |
 
 ### Machines Virtuelles
 

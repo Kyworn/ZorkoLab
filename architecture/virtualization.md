@@ -23,7 +23,7 @@ Le nœud Proxmox gère les conteneurs LXC et s'occupe de la distribution des res
 | **102** | `homebridge` | Apps | `10.10.20.102`| Pont domotique vers Apple HomeKit. |
 | **112** | `docker` | Dev | `10.10.30.12` | Hôte Docker (Géré via Portainer). |
 | **121** | `portfolio` | Dev | `10.10.30.21` | Environnement web de développement. |
-| **201** | `inference` | IA | `10.10.40.10` | Modèles LLM via Ollama. **Passthrough de 2 GPU NVIDIA Quadro P5000**. |
+| **201** | `inference` | IA | `10.10.40.10` | Modèles LLM via llama.cpp (Qwen 35B). **Passthrough de 2 GPU NVIDIA Quadro P5000**. |
 
 ## Hardware Passthrough (GPU)
 

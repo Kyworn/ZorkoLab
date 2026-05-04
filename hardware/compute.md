@@ -31,7 +31,7 @@ Ce document inventorie le matériel physique de l'hyperviseur Proxmox.
 | **121** | Portfolio | `10.10.30.21` | Dev | - |
 | **123** | AgentDVR | `10.10.20.23` | Apps | - |
 | **130** | Media-Hub | `10.10.20.30` | Apps | - |
-| **201** | Inference (Ollama) | `10.10.40.10` | IA | **2x GPU Quadro P5000** |
+| **201** | Inference (llama.cpp) | `10.10.40.10` | IA | **2x GPU Quadro P5000** |
 | **202** | Jarvis (Hermes) | `10.10.10.20` | Mgmt | - |
 
 ## Points de Montage Proxmox (LVM & NFS)

@@ -54,7 +54,7 @@ graph TD
         end
 
         subgraph VLAN40 ["🟪 VLAN 40 : Intelligence Artificielle (10.10.40.x)"]
-            INFER["🧠 Inference Ollama (201)<br/>(Passthrough 2x P5000)"]:::lxc
+            INFER["🧠 Inference llama.cpp (201)<br/>(Passthrough 2x P5000)"]:::lxc
         end
     end
 

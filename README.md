@@ -84,32 +84,32 @@ graph TB
         PVE[⚙️ AMD Ryzen 5 5600X<br/>6C/12T — 32 GB RAM — Corsair 680X<br/>2× Quadro P5000 — 192.168.1.61]
 
         subgraph LXC_INFRA["Infrastructure (3 CT)"]
-            CT_NPM[🔀 Nginx Proxy Manager — 118<br/>192.168.1.186]
-            CT_DOCKER[🐋 Docker Host — 112<br/>192.168.1.62]
+            CT_NPM[🔀 Nginx Proxy Manager — 118<br/>10.10.10.18]
+            CT_DOCKER[🐋 Docker Host — 112<br/>10.10.30.12]
             CT_CF[📡 Cloudflared — 110]
         end
 
         subgraph LXC_MEDIA["Média (3 CT)"]
-            CT_QBIT[⬇️ qBittorrent — 104<br/>192.168.1.52<br/>VPN Kill Switch]
-            CT_MEDIAHUB[🎬 Media Hub — 130<br/>192.168.1.51<br/>Radarr + Sonarr + Prowlarr]
+            CT_QBIT[⬇️ qBittorrent — 104<br/>10.10.20.10<br/>VPN Kill Switch]
+            CT_MEDIAHUB[🎬 Media Hub — 130<br/>10.10.20.30<br/>Radarr + Sonarr + Prowlarr]
             CT_AGENTDVR[📹 AgentDVR — 123<br/>192.168.1.39]
         end
 
         subgraph LXC_DEV["Dev & Sécurité (4 CT)"]
-            CT_GITEA[🗂️ Gitea — 120<br/>192.168.1.93]
-            CT_VAULT[🔒 Vaultwarden — 114<br/>192.168.1.110]
-            CT_PORTFOLIO[🌐 Portfolio — 121<br/>192.168.1.155]
+            CT_GITEA[🗂️ Gitea — 120<br/>10.10.20.20]
+            CT_VAULT[🔒 Vaultwarden — 114<br/>10.10.20.14]
+            CT_PORTFOLIO[🌐 Portfolio — 121<br/>10.10.30.21]
             CT_PB[🔐 Passbolt — 113<br/>stopped]
         end
 
         subgraph LXC_MON["Monitoring & Home (3 CT)"]
-            CT_GRAF[📈 Grafana — 115<br/>192.168.1.194]
-            CT_HB[🏡 Homebridge — 102<br/>192.168.1.13]
+            CT_GRAF[📈 Grafana — 115<br/>10.10.10.10]
+            CT_HB[🏡 Homebridge — 102<br/>10.10.20.102]
             CT_COCKPIT[🖥️ Cockpit — accès via pve.lan:9090]
         end
 
         subgraph LXC_AI["IA / GPU (1 CT)"]
-            CT_INFER[🤖 Inference — 201<br/>192.168.1.11<br/>Ollama — 2× P5000]
+            CT_INFER[🤖 Inference — 201<br/>10.10.40.10<br/>Ollama — 2× P5000]
         end
     end
 
@@ -159,24 +159,24 @@ graph TB
 | Status | Domaine | Backend | SSL |
 |--------|---------|---------|-----|
 | 🟢 | ad.zorko.xyz | 192.168.1.189:80 | ✅ |
-| 🟢 | cockpit.zorko.xyz | 192.168.1.61:9090 | ✅ |
-| 🟢 | git.zorko.xyz | 192.168.1.93:3000 | ✅ |
-| 🟢 | grafana.zorko.xyz | 192.168.1.194:3000 | ✅ |
-| 🟢 | home.zorko.xyz | 192.168.1.13:8581 | ✅ |
+| 🟢 | cockpit.zorko.xyz | 10.10.10.1:9090 | ✅ |
+| 🟢 | git.zorko.xyz | 10.10.20.20:3000 | ✅ |
+| 🟢 | grafana.zorko.xyz | 10.10.10.10:3000 | ✅ |
+| 🟢 | home.zorko.xyz | 10.10.20.102:8581 | ✅ |
 | 🟢 | kuma.zorko.xyz | 192.168.1.42:3001 | ✅ |
 | 🟢 | nas.zorko.xyz | 192.168.1.109:80 | ✅ |
-| 🟢 | npm.zorko.xyz | 192.168.1.186:81 | ✅ |
-| 🟢 | petio.zorko.xyz | 192.168.1.51:5055 | ✅ |
+| 🟢 | npm.zorko.xyz | 10.10.10.18:81 | ✅ |
+| 🟢 | petio.zorko.xyz | 10.10.20.30:5055 | ✅ |
 | 🟢 | plex.zorko.xyz | 192.168.1.108:32400 | ✅ |
-| 🟢 | port.zorko.xyz | 192.168.1.62:9443 | ✅ |
-| 🟢 | prow.zorko.xyz | 192.168.1.51:9696 | ✅ |
-| 🟢 | pve.zorko.xyz | 192.168.1.61:8006 | ✅ |
-| 🟢 | qbit.zorko.xyz | 192.168.1.52:8090 | ✅ |
-| 🟢 | radarr.zorko.xyz | 192.168.1.51:7878 | ✅ |
-| 🟢 | sonarr.zorko.xyz | 192.168.1.51:8989 | ✅ |
-| 🟢 | vault.zorko.xyz | 192.168.1.110:8000 | ✅ |
+| 🟢 | port.zorko.xyz | 10.10.30.12:9443 | ✅ |
+| 🟢 | prow.zorko.xyz | 10.10.20.30:9696 | ✅ |
+| 🟢 | pve.zorko.xyz | 10.10.10.1:8006 | ✅ |
+| 🟢 | qbit.zorko.xyz | 10.10.20.10:8090 | ✅ |
+| 🟢 | radarr.zorko.xyz | 10.10.20.30:7878 | ✅ |
+| 🟢 | sonarr.zorko.xyz | 10.10.20.30:8989 | ✅ |
+| 🟢 | vault.zorko.xyz | 10.10.20.14:8000 | ✅ |
 
-> DNS wildcard `*.zorko.xyz → 192.168.1.186` géré par AdGuard Home — NPM centralise tous les reverse proxy internes.
+> DNS wildcard `*.zorko.xyz → 10.10.10.18` géré par AdGuard Home — NPM centralise tous les reverse proxy internes.
 
 ---
 
@@ -187,7 +187,10 @@ graph TB
 - ✅ **AdGuard Home** (VM Freebox) — DNS filtrant avec DNSSEC, 6 listes actives
 - ✅ **Vaultwarden** (LXC 114) — admin token argon2id, inscriptions désactivées, backups sqlite3 automatiques
 - ✅ **qBittorrent VPN Kill Switch** — iptables OUTPUT DROP + bind tun0 (Windscribe)
-- ✅ **Firewall Proxmox** — règles per-node + cluster, accès SSH restreint
+- ✅ **Firewall Proxmox** — règles Datacenter + Node, isolation VLAN stricte
+- ✅ **VLANs Dédiés** — Management (10), Apps (20), Dev (30), IA (40)
+- ✅ **CrowdSec** — Bouncer nftables (blocage communautaire massif)
+- ✅ **Containers Unprivileged** — permissions cron durcies et prévention IP spoofing
 - ✅ **WAF Cloudflare** avec protection DDoS intégrée
 - ✅ **Reverse Proxy SSL** centralisé (Nginx Proxy Manager)
 

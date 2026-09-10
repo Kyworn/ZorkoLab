@@ -66,7 +66,7 @@ Le calcul, le réseau, le tunnel Cloudflare et le pool ZFS sont opérationnels. 
 - les limites mémoire des LXC ont été ajustées d'après leurs pics sur un mois, ramenant l'autostart de 42 à 23 GiB ;
 - d'anciennes règles pare-feu visant `10.10.0.0/16` subsistent et les règles d'administration du nœud sont trop larges.
 
-Le nettoyage a supprimé les LXC décommissionnés 140 et 202, retiré 14 snapshots automatiques obsolètes, exécuté un TRIM complet, organisé les LXC avec des tags et désactivé l'agent Beszel présent à côté de Vaultwarden. Il a ensuite retiré les anciens accès techniques, Cockpit, Ollama, dnsmasq et les vestiges PBS du nœud. Les dernières archives des deux anciens LXC restent temporairement sur TrueNAS.
+Le nettoyage a supprimé les LXC décommissionnés 140 et 202, retiré 14 snapshots automatiques obsolètes, exécuté un TRIM complet, organisé les LXC avec des tags et désactivé l'agent Beszel présent à côté de Vaultwarden. Il a ensuite retiré les anciens accès et comptes techniques, l'ancien Prometheus, Cockpit, Ollama, dnsmasq et les vestiges PBS du nœud. Seuls trois accès SSH root restent autorisés. Les dernières archives des deux anciens LXC restent temporairement sur TrueNAS.
 
 Le détail global, les preuves vérifiées et les limites de l'inspection sont consignés dans [AUDIT-2026-09-10.md](./AUDIT-2026-09-10.md). Le contrôle approfondi de l'hôte se trouve dans [PVE-HOST-AUDIT-2026-09-10.md](./PVE-HOST-AUDIT-2026-09-10.md).
 

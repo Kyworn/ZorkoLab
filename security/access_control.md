@@ -13,7 +13,9 @@
 
 Les règles datacenter autorisent l'administration SSH et HTTPS depuis le LAN. Des règles placées au niveau du nœud autorisent toutefois SSH, HTTP et HTTPS depuis toute source et élargissent donc la portée effective. Les ports 9100 et 111 font l'objet de règles LAN suivies d'un rejet, mais `rpc.statd` écoute également sur des ports dynamiques.
 
-L'accès SSH root par mot de passe est désactivé. Les douze copies de l'ancienne clé `jarvis@host202` et un doublon Hermes ont été retirés. Une clé root Hermes reste nécessaire aux contrôles de santé actuels. Les deux anciens utilisateurs techniques, le token `OC_Jarvis`, leurs ACL et les fichiers de l'ancien exporter contenant un secret en clair ont été supprimés.
+L'accès SSH root par mot de passe est désactivé. Trois clés seulement restent autorisées : l'accès courant `zorko-proxmox`, une clé de secours `zmac` et la clé `jarvis@openclaw` nécessaire aux contrôles Hermes. Les anciennes clés, dont douze copies de `jarvis@host202`, ont été retirées.
+
+Seul `root` conserve un shell Linux sur l'hôte. Les comptes locaux inutilisés `zorko`, `crowdsec` et `git` ont été supprimés. Les deux anciens utilisateurs Proxmox techniques, le token `OC_Jarvis`, leurs ACL et les fichiers de l'ancien exporter contenant un secret en clair ont également été retirés. L'ancien dépôt `infra-bus` a été exporté et vérifié sur TrueNAS avant sa suppression du nœud.
 
 ## Isolation des workloads
 

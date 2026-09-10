@@ -68,7 +68,7 @@ L'authentification par mot de passe est désactivée et `root` n'accepte que les
 - X11 forwarding et TCP forwarding restent autorisés globalement ;
 - plusieurs vieilles clés de machines sont encore présentes sans inventaire d'usage.
 
-Action appliquée : les douze clés `jarvis@host202` et le doublon de la clé Hermes ont été retirés. Une seule clé `jarvis@openclaw` reste présente parce que les contrôles de santé Hermes l'utilisent encore. Il faudra la remplacer par une méthode limitée si ces contrôles sont conservés.
+Action appliquée : les douze clés `jarvis@host202`, le doublon Hermes et les anciennes clés sans usage constaté ont été retirés. Trois clés restent autorisées : l'accès courant `zorko-proxmox`, la clé de secours `zmac` et `jarvis@openclaw` pour les contrôles Hermes. Les accès courant et Hermes ont été retestés après le nettoyage. Il faudra remplacer à terme la clé root Hermes par une méthode limitée.
 
 ### Comptes API
 
@@ -81,6 +81,14 @@ Trois identités techniques subsistaient :
 Aucune utilisation de ces identités n'a été trouvée dans les logs disponibles. Un ancien fichier `/opt/pve-exporter.cfg`, lisible par tous les utilisateurs locaux, contenait encore un mot de passe en clair. Le service associé était absent et `node_exporter` assure aujourd'hui les métriques sur le port 9100.
 
 Action appliquée : les deux utilisateurs, le token et leurs ACL ont été révoqués. Les fichiers `pve-exporter` orphelins ont été supprimés. Le secret exposé n'est plus accepté par Proxmox.
+
+### Comptes Linux et ancien dépôt interne
+
+Les comptes locaux `zorko`, `crowdsec` et `git` n'avaient aucun rôle de connexion encore nécessaire. Ils ont été supprimés avec leurs petits répertoires personnels. Seul `root` conserve un shell interactif sur l'hôte.
+
+L'ancien compte `git` desservait le dépôt bare `/srv/git/infra-bus.git`, sans activité SSH récente et sans commit depuis le 9 août. Le dépôt a été exporté dans `Backup/configs/infra-bus-final-2026-09-10.bundle`, validé avec `git bundle verify`, puis supprimé du nœud.
+
+L'ancien service Prometheus local, désactivé, ainsi que ses binaires et sa configuration ont été retirés. Sa petite configuration a été archivée dans `Backup/configs/legacy-host-cleanup-2026-09-10.tar.zst`. `node_exporter` reste actif sur le port 9100 et appartient maintenant à `root`. CrowdSec et son bouncer restent actifs malgré le retrait du compte local inutilisé.
 
 ### Pare-feu
 

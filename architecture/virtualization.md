@@ -17,6 +17,8 @@ Les IDs restent stables et ne codent aucune fonction. Renuméroter un LXC n'appo
 
 La politique de sauvegarde utilisera plus tard des tags séparés. Les tags fonctionnels ne doivent pas servir à décider seuls si un LXC est sauvegardé.
 
+Chaque LXC possède également une note opérationnelle courte dans Proxmox. Le format reste identique partout : rôle, emplacement des données, protection actuelle, dépendances et éventuel point d'attention. Les anciennes descriptions publicitaires générées par les scripts d'installation ont été retirées.
+
 ## Inventaire LXC
 
 | ID | Nom | IP | CPU | RAM | État | Rôle |

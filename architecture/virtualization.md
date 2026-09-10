@@ -4,6 +4,19 @@
 
 L'hôte `pve` exécute Proxmox VE 9.2.11 sur Debian 13, avec le noyau `7.0.14-14-pve` lors de l'audit. Les workloads de production sont des conteneurs LXC non privilégiés.
 
+## Convention d'organisation
+
+Les IDs restent stables et ne codent aucune fonction. Renuméroter un LXC n'apporterait aucun bénéfice opérationnel et pourrait casser des références externes. L'organisation visible dans Proxmox repose sur un seul tag fonctionnel par conteneur :
+
+| Tag | LXC | Rôle |
+|:---|:---|:---|
+| `core` | 102, 114, 118, 119, 120, 126, 129 | services structurants du lab |
+| `apps` | 110, 112, 121, 122, 125, 128 | applications et outils |
+| `media` | 104, 130 | téléchargement et gestion média |
+| `ai` | 203, 210, 211 | assistants, gateway et inférence |
+
+La politique de sauvegarde utilisera plus tard des tags séparés. Les tags fonctionnels ne doivent pas servir à décider seuls si un LXC est sauvegardé.
+
 ## Inventaire LXC
 
 | ID | Nom | IP | CPU | RAM | État | Rôle |

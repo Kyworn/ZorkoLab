@@ -1,145 +1,85 @@
-# OOD need update
-# 🏠 ZorkoLab : Infrastructure & Homelab
+# ZorkoLab
 
-> Architecture d'hébergement privé haute performance, orientée sécurité (Zero-Trust), virtualisation et intelligence artificielle.
+> Homelab self-hosted autour de Proxmox, TrueNAS, Cloudflare et de l'inférence LLM locale.
 
-![Proxmox](https://img.shields.io/badge/Proxmox_VE-9.1.9-E57000?style=for-the-badge&logo=proxmox&logoColor=white)
-![Debian](https://img.shields.io/badge/Debian_13_Trixie-A81D33?style=for-the-badge&logo=debian&logoColor=white)
-![TrueNAS](https://img.shields.io/badge/TrueNAS_Scale-26.0_BETA-0095D5?style=for-the-badge&logo=truenas&logoColor=white)
-![Cloudflare](https://img.shields.io/badge/Zero_Trust-F38020?style=for-the-badge&logo=cloudflare&logoColor=white)
-![ZFS](https://img.shields.io/badge/ZFS_RAID_1-00979D?style=for-the-badge)
+![Proxmox VE](https://img.shields.io/badge/Proxmox_VE-9.2.11-E57000?style=flat-square&logo=proxmox&logoColor=white)
+![TrueNAS](https://img.shields.io/badge/TrueNAS-26.0.0--BETA.3-0095D5?style=flat-square&logo=truenas&logoColor=white)
+![Debian](https://img.shields.io/badge/Debian-12%20%7C%2013-A81D33?style=flat-square&logo=debian&logoColor=white)
+![ZFS](https://img.shields.io/badge/ZFS-mirror-2F5F8F?style=flat-square)
+![Audit](https://img.shields.io/badge/audit-2026--09--10-2ea44f?style=flat-square)
 
----
+Ce dépôt décrit l'infrastructure telle qu'elle fonctionne réellement. Les chiffres ci-dessous viennent d'un audit direct de Proxmox, des conteneurs, de Nginx Proxy Manager et de TrueNAS réalisé le **10 septembre 2026**.
 
-## 🏗️ Architecture du Système
-
-L'infrastructure est bâtie sur un modèle hyper-convergé séparant logiquement le stockage (TrueNAS) du calcul (Proxmox), tout en assurant une isolation stricte des services via des VLANs.
+## Vue d'ensemble
 
 ```mermaid
-graph TD
-    %% Styles
-    classDef cloud fill:#F38020,stroke:#fff,stroke-width:2px,color:#fff
-    classDef pve fill:#E57000,stroke:#fff,stroke-width:2px,color:#fff
-    classDef truenas fill:#0095D5,stroke:#fff,stroke-width:2px,color:#fff
-    classDef lxc fill:#4CAF50,stroke:#fff,stroke-width:2px,color:#fff
-    classDef vlan fill:#2c3e50,stroke:#bdc3c7,stroke-width:2px,color:#fff,stroke-dasharray: 5 5
+flowchart LR
+    Internet((Internet)) --> CF[Cloudflare Tunnel]
+    CF --> EDGE[CT 129<br/>cloudflared]
+    EDGE --> NPM[CT 118<br/>Nginx Proxy Manager]
+    NPM --> APPS[Services LXC et Docker]
 
-    subgraph Internet ["🌐 Internet Edge"]
-        CF["☁️ Cloudflare Zero Trust<br/>(WAF, DDoS Protection, Access)"]:::cloud
-    end
-
-    subgraph Network ["🏠 Réseau Domestique (Freebox Delta 10G)"]
-        ADG["🛡️ AdGuard Home VM<br/>(DNS Filtrant + DNSSEC)"]:::lxc
-        CF_TUN["🔒 Cloudflared Tunnel<br/>(Hébergé dans la VM AdGuard)"]:::lxc
-    end
-
-    subgraph Proxmox ["⚙️ Proxmox VE (Compute Node) — 192.168.1.61"]
-
-        subgraph VLAN10 ["🟦 VLAN 10 : Management (10.10.10.x)"]
-            NPM["🔀 Nginx Proxy Manager (118)"]:::lxc
-            GRAF["📈 Grafana (115)"]:::lxc
-            JARVIS["🤖 Jarvis/Hermes (202)"]:::lxc
-        end
-
-        subgraph VLAN20 ["🟩 VLAN 20 : Applications (10.10.20.x)"]
-            VAULT["🔒 Vaultwarden (114)"]:::lxc
-            GIT["🗂️ Gitea (120)"]:::lxc
-            MEDIA["🎬 Media Hub (130)"]:::lxc
-            QBIT["⬇️ qBittorrent (104)"]:::lxc
-            HB["🏡 Homebridge (102)"]:::lxc
-        end
-
-        subgraph VLAN30 ["🟨 VLAN 30 : Développement (10.10.30.x)"]
-            DOCKER["🐋 Docker Host (112)"]:::lxc
-            PORTFOLIO["🌐 Portfolio (121)"]:::lxc
-        end
-
-        subgraph VLAN40 ["🟪 VLAN 40 : Intelligence Artificielle (10.10.40.x)"]
-            INFER["🧠 Inference llama.cpp (201)<br/>(Passthrough 2x P5000)"]:::lxc
-        end
-    end
-
-    subgraph Storage ["💿 TrueNAS Scale (Storage Node) — 192.168.1.109"]
-        ZFS["🗄️ ZFS Pool: Tank (RAID 1)<br/>932 GB"]:::truenas
-    end
-
-    %% Routing
-    CF -->|Trafic Web Sécurisé| CF_TUN
-    CF_TUN -->|Reverse Proxy HTTP/S| NPM
-    
-    NPM --> VLAN10
-    NPM --> VLAN20
-    NPM --> VLAN30
-    NPM --> VLAN40
-    
-    VLAN20 -.->|NFS Mounts| ZFS
-    VLAN10 -.->|Backups| ZFS
+    LAN[LAN 192.168.1.0/24] --> PVE[Proxmox VE<br/>Ryzen 5 5600X]
+    LAN --> NAS[TrueNAS<br/>Intel N100]
+    PVE --> CT[20 LXC<br/>18 actifs]
+    PVE --> GPU[CT 211<br/>2× Quadro P5000]
+    NAS --> ZFS[Tank<br/>miroir 2× 1 To]
+    ZFS -. NFS .-> PVE
 ```
 
----
+| Brique | État audité |
+|:---|:---|
+| Compute | Ryzen 5 5600X, 32 GiB de RAM, Proxmox VE 9.2.11 |
+| Accélération | 2× Quadro P5000 16 GiB affectées au LXC 211 |
+| Virtualisation | 20 LXC, dont 18 actifs, plus un template VM arrêté |
+| Exposition web | 19 hôtes proxy actifs sur 24 configurés dans NPM |
+| Stockage | miroir ZFS de 920 GiB utilisables, 34,9 % occupés, aucune erreur |
+| Réseau | LAN unique `192.168.1.0/24`, passerelle `192.168.1.254` |
+| Défense hôte | pare-feu Proxmox, CrowdSec et Fail2Ban actifs |
+| Supervision | audit quotidien à 06:00 et heartbeat hebdomadaire via ntfy |
 
-## 📊 État de l'Infrastructure
+## Services
 
-| Catégorie | Détail | Statut / Métrique |
-|:---|:---|:---|
-| **Réseau** | Freebox Delta (FTTH) | **10 Gbps ↓** / **900 Mbps ↑** |
-| **Sécurité** | CrowdSec, Proxmox Firewall, AdGuard | **Actifs & Durcis** |
-| **Compute** | AMD Ryzen 5 5600X (6C/12T) / 32 GB RAM | ~20% d'utilisation RAM |
-| **GPU** | 2× NVIDIA Quadro P5000 (16 GB) | Allouées à l'IA (LXC 201) |
-| **Containers** | 11 LXC "Unprivileged" actifs (+1 stoppé) | Production 24/7 |
-| **Stockage** | ZFS Miroir (TrueNAS) | **661 GB** / 932 GB (70.9% utilisés) |
+| Domaine | Services principaux |
+|:---|:---|
+| Edge et réseau | cloudflared, Nginx Proxy Manager, AdGuard Home |
+| Développement | Gitea, Codeman, Portfolio, Docker/Portainer |
+| Média | qBittorrent + Gluetun, Sonarr, Radarr, Bazarr, Prowlarr, Seerr, Shelfmark |
+| Maison | Homebridge |
+| IA | llama.cpp sur 2× P5000, LLM Gateway, Jarvis 2 / Hermes |
+| Sécurité et suivi | Vaultwarden, Beszel, CrowdSec, Fail2Ban, ntfy |
+| Données | AzerothDB, Umami, SearXNG, Veille Sociale |
 
----
+L'inventaire détaillé, avec IDs, ressources et états, se trouve dans [architecture/virtualization.md](./architecture/virtualization.md).
 
-## 🛡️ Sécurité & Isolation
+## État opérationnel au 10 septembre 2026
 
-Le système a été conçu avec une approche **Zero-Trust** et "Défense en Profondeur" :
+Le calcul, le réseau, le tunnel Cloudflare et le pool ZFS sont opérationnels. L'audit a toutefois relevé des points à traiter :
 
-1. **Aucun port entrant ouvert** sur le routeur. Tout le trafic externe transite via un **Tunnel Cloudflare**.
-2. **Isolation L2/L3** : Les conteneurs sont répartis dans des **VLANs stricts** gérés par le pare-feu natif de Proxmox.
-3. **Hardening Système** :
-   - Tous les conteneurs sont en mode **Unprivileged**.
-   - Permissions durcies sur les crons et fichiers sensibles (`/etc/shadow`).
-   - Protection contre l'IP Spoofing (`rp_filter` strict).
-4. **Active Defense** :
-   - **CrowdSec** bloque en temps réel les IPs malveillantes via des listes communautaires et `nftables`.
-   - **Fail2Ban** protège les accès SSH locaux.
+- le pool LVM-thin Proxmox est occupé à 82,5 % et bloque certains snapshots de sauvegarde ;
+- les jobs de sauvegarde des 9 et 10 septembre se sont terminés avec des erreurs ;
+- les LXC 203, 210 et 211 ne figurent pas encore dans le job VZDump ;
+- la tâche de snapshots TrueNAS du dataset `backup` est désactivée ;
+- 14 mises à jour de sécurité Debian sont en attente sur l'hôte ;
+- `nvidia-persistenced.service` est en échec, même si les deux GPU et llama.cpp fonctionnent ;
+- d'anciennes règles pare-feu visant `10.10.0.0/16` subsistent alors que les VLAN ne sont plus déployés.
 
----
+Le détail, les preuves vérifiées et les limites de l'inspection sont consignés dans [AUDIT-2026-09-10.md](./AUDIT-2026-09-10.md).
 
-## 🌐 Services Accessibles (NPM & Cloudflare)
+## Documentation
 
-Plus de 31 services sont routés via Nginx Proxy Manager. Voici les principaux :
+| Sujet | Document |
+|:---|:---|
+| Topologie réseau | [architecture/network.md](./architecture/network.md) |
+| Conteneurs et virtualisation | [architecture/virtualization.md](./architecture/virtualization.md) |
+| Stockage et datasets | [architecture/storage.md](./architecture/storage.md) |
+| Nœud de calcul | [hardware/compute.md](./hardware/compute.md) |
+| Nœud TrueNAS | [hardware/storage.md](./hardware/storage.md) |
+| Matériel réseau | [hardware/network.md](./hardware/network.md) |
+| Contrôle d'accès | [security/access_control.md](./security/access_control.md) |
+| Cloudflare et reverse proxy | [security/cloudflare_zero_trust.md](./security/cloudflare_zero_trust.md) |
+| Sauvegardes et contrôles | [automation/backups.md](./automation/backups.md) |
 
-| Service | Endpoint Interne | Domaine | Accès |
-|:---|:---|:---|:---|
-| **Proxmox VE** | `192.168.1.61:8006` | `pve.zorko.xyz` | 🔒 LAN Only |
-| **TrueNAS** | `192.168.1.109:80` | `nas.zorko.xyz` | 🔒 LAN Only |
-| **Vaultwarden**| `10.10.20.14:8000` | `vault.zorko.xyz` | 🌍 Public (WAF Auth) |
-| **Gitea** | `10.10.20.20:3000` | `git.zorko.xyz` | 🔒 LAN Only |
-| **Grafana** | `10.10.10.10:3000` | `grafana.zorko.xyz` | 🔒 LAN Only |
-| **Media Hub** | `10.10.20.30:xxxx` | `radarr.*`, `sonarr.*` | 🔒 LAN Only |
-| **qBittorrent**| `10.10.20.10:8090` | `qbit.zorko.xyz` | 🔒 LAN Only |
+## Portée
 
-> *La résolution DNS interne (`*.zorko.xyz` -> `10.10.10.18`) est assurée par AdGuard Home.*
-
----
-
-## 📚 Documentation Détaillée
-
-Explorez les spécifications techniques de chaque brique de l'infrastructure :
-
-### 🏛️ Architecture logicielle
-- [Virtualisation (Proxmox & LXC)](./architecture/virtualization.md)
-- [Stockage & ZFS](./architecture/storage.md)
-- [Réseau & VLANs](./architecture/network.md)
-
-### 💻 Matériel
-- [Serveurs de Calcul (Compute)](./hardware/compute.md)
-- [Nœud de Stockage (NAS)](./hardware/storage.md)
-- [Équipements Réseau](./hardware/network.md)
-
-### 🔐 Sécurité & Automatisation
-- [Règles Pare-feu & Contrôle d'Accès](./security/access_control.md)
-- [Cloudflare Zero Trust](./security/cloudflare_zero_trust.md)
-- [Stratégie de Sauvegarde](./automation/backups.md)
+Ce dépôt est une documentation d'exploitation, pas une promesse de haute disponibilité. Le miroir ZFS protège contre la panne d'un disque, mais ne remplace pas une sauvegarde hors site. Les états et taux d'occupation sont des instantanés datés et évolueront avec le lab.

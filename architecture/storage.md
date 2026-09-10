@@ -1,24 +1,39 @@
-# Architecture de Stockage
+# Architecture du stockage
 
-Le stockage est centralisé sur un nœud **TrueNAS Scale** distinct, garantissant la sécurité des données grâce au système de fichiers ZFS.
+## Vue logique
 
-## ZFS Pool : Tank
+TrueNAS expose le pool ZFS `Tank` à Proxmox et aux postes du LAN. Le pool est un miroir de deux disques de 931,51 GiB, soit 920 GiB utilisables dans l'interface TrueNAS.
 
-*   **Topologie :** RAID 1 (Miroir) de 2 disques HDD WD Red de 1 TB.
-*   **Capacité Utilisable :** 932 GB
-*   **Performance :** Compression LZ4 activée par défaut.
+| Mesure au 10 septembre 2026 | Valeur |
+|:---|:---|
+| État du pool | ONLINE, aucune erreur |
+| Organisation | 1× MIRROR, 2 disques |
+| Capacité utilisable | 920 GiB |
+| Espace utilisé | 321,1 GiB, 34,9 % |
+| Espace disponible | 598,9 GiB |
+| Dernier scrub affiché | 23 août 2026, 0 erreur |
+| Planification du scrub | dimanche à 13:00 |
 
-## Datasets ZFS et Cas d'Usage
+## Datasets
 
-| Dataset | Taille | Description | Protocole de Partage | Sécurité |
-|:---|:---|:---|:---|:---|
-| `Tank/server/backup` | 302 GB | Sauvegardes automatisées de Proxmox (VZDump). | **NFS** | MapRoot = `root`, Lecture/Écriture |
-| `Tank/server/Film` | 183 GB | Médiathèque Films. | **SMB / NFS** | Partage SMB protégé (pas d'invité) |
-| `Tank/server/Series` | 82 GB | Médiathèque Séries. | **SMB / NFS** | Partage SMB protégé |
-| `Tank/server/download`| 49 GB | Dossier tampon pour qBittorrent. | **NFS** | - |
-| `Tank/share` | 36 GB | Fichiers personnels. | **SMB** | Accès authentifié strict |
+| Dataset | Utilisation observée | Usage principal |
+|:---|---:|:---|
+| `Tank/server/backup` | 40,93 GiB | sauvegardes VZDump |
+| `Tank/server/download` | 11,03 GiB | téléchargements |
+| `Tank/server/Film` | 121,86 GiB | films |
+| `Tank/server/Livres` | 936 KiB | livres |
+| `Tank/server/project` | 2,23 GiB | projets, dont Gitea |
+| `Tank/server/Series` | 88,79 GiB | séries |
+| `Tank/share` | 53,96 GiB | fichiers partagés |
 
-## Communication Proxmox <-> TrueNAS
+Les chiffres de datasets et ceux du tableau de bord peuvent différer légèrement en raison de la comptabilisation ZFS, des snapshots et des unités affichées.
 
-L'hôte Proxmox monte le partage `backup` via NFS pour y déposer quotidiennement les archives de sauvegarde des conteneurs LXC. 
-Les conteneurs de média (`media-hub`, `qbittorrent`) montent directement les partages NFS depuis le TrueNAS en utilisant les interfaces réseau internes, garantissant un flux de données sans interférence avec l'hyperviseur.
+## Partages
+
+- SMB : 6 partages actifs, `Film`, `Series`, `backups`, `download`, `project` et `share`.
+- NFS : 8 exports actifs, `Film`, `Livres`, `Series`, `backup`, `download`, `project`, `project/gitea` et `share`.
+- iSCSI : service arrêté, avec un target `pc` configuré.
+
+Les exports NFS sont limités au réseau `192.168.1.0/24`. Proxmox monte notamment `Backup`, `Film`, `Series`, `Download`, `Livres` et `gitea`.
+
+La stratégie de snapshots et de sauvegardes est détaillée dans [automation/backups.md](../automation/backups.md).

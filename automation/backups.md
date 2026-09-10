@@ -1,26 +1,39 @@
-# Stratégie de Sauvegardes (Backups)
+# Sauvegardes et contrôles automatiques
 
-La protection des données est structurée en plusieurs niveaux de rétention et de redondance.
+## VZDump Proxmox
 
-## 1. Snapshots ZFS (Chaud - Instantané)
+| Paramètre | Configuration actuelle |
+|:---|:---|
+| Fréquence | tous les jours à 04:00 |
+| Destination | stockage NFS `Backup` sur TrueNAS |
+| Mode | snapshot |
+| Compression | Zstandard |
+| Rétention | dernier backup uniquement |
+| Workloads inclus | 102, 104, 110, 112, 114, 118, 119, 120, 121, 122, 125, 126, 128, 129, 130, 140, 202 |
 
-Le nœud TrueNAS exécute des snapshots ZFS réguliers sur le pool `Tank`.
-- **Fréquence :** Quotidienne.
-- **Rétention :** 14 jours.
-- **Avantage :** Protection instantanée contre les suppressions accidentelles et les ransomwares. Coût de stockage presque nul pour les données statiques.
+Les LXC 203, 210 et 211 ne sont pas encore inclus. Les jobs des 9 et 10 septembre 2026 se sont terminés avec des erreurs. Le log du 10 septembre relie l'échec à l'impossibilité de créer de nouveaux snapshots LVM-thin lorsque le seuil d'espace libre est atteint.
 
-## 2. Sauvegardes Proxmox (Froid - VZDump)
+## Snapshots TrueNAS
 
-Proxmox sauvegarde l'état complet des conteneurs LXC et des VMs.
-- **Destination :** Partage NFS `/mnt/pve/Backup` (fourni par TrueNAS).
-- **Fréquence :** Hebdomadaire (Dimanche à 01:00 AM).
-- **Rétention :** 2 dernières sauvegardes conservées.
-- **Format :** LZO (Compressé).
+| Dataset | Fréquence | Rétention | État au 10 septembre |
+|:---|:---|:---|:---|
+| `Tank/server/backup` | quotidien à 12:00 | 6 jours | désactivé, dernier run 8 jours auparavant |
+| `Tank/server/project/gitea` | quotidien à 12:00 | 6 jours | actif |
+| `Tank/share` | quotidien à 12:00 | 6 jours | actif |
 
-## 3. Sécurisation du Montage
+Aucune tâche de réplication, rsync ou cloud sync n'était visible dans l'interface Data Protection. Le miroir ZFS et les snapshots locaux ne constituent donc pas une sauvegarde hors site.
 
-Afin de prévenir tout risque (par exemple un malware dans un conteneur qui chiffrerait les backups), le dossier `/mnt/pve/Backup` sur le TrueNAS a fait l'objet d'un durcissement :
-- **Permissions :** `700` (Propriétaire `root` uniquement).
-- **MapRoot NFS :** Verrouillé.
+## Audit quotidien
 
-*Note de migration à venir : Le passage vers **Proxmox Backup Server (PBS)** est planifié pour remplacer VZDump et bénéficier de la déduplication au bloc.*
+`/opt/health-check.sh` s'exécute chaque jour à 06:00 et contrôle notamment :
+
+- l'espace du pool thin, des systèmes de fichiers et des montages NFS ;
+- l'expiration du certificat wildcard et un dry-run Certbot le dimanche ;
+- le nombre de snapshots ;
+- les mises à jour de sécurité ;
+- SMART, les unités systemd en échec et les LXC arrêtés ;
+- la fraîcheur des sauvegardes.
+
+Les alertes passent par ntfy. Un heartbeat récapitulatif est envoyé le lundi. Un nettoyage quotidien est lancé à 03:00 pour les journaux, les fichiers temporaires et certains objets Docker.
+
+Point technique à revoir : le nettoyage recherche des backups `*.gz`, alors que la configuration actuelle produit des archives `*.tar.zst`.

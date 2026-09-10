@@ -1,40 +1,35 @@
-# Matériel : Stockage (NAS)
+# Nœud de stockage
 
-L'infrastructure s'appuie sur un nœud de stockage physique dédié tournant sous TrueNAS Scale.
+## TrueNAS
 
-## Nœud TrueNAS Scale
-
-| Spécification | Détail |
+| Élément | Configuration vérifiée |
 |:---|:---|
-| **CPU** | Intel N100 (4 cœurs / 4 threads, jusqu'à 3.4 GHz) |
-| **RAM** | 16 GB DDR4 |
-| **Châssis** | Mini PC AOOSTAR (Format Ultra-compact) |
-| **Stockage OS** | 512 GB NVMe SSD |
-| **Système d'Exploitation** | TrueNAS Scale 26.0.0-BETA.1 |
-| **Réseau** | IP: `192.168.1.109` (Interface Admin) |
+| CPU | Intel N100 |
+| RAM | 15,4 GiB visibles |
+| Système | TrueNAS Community Edition 26.0.0-BETA.3 |
+| Réseau | `192.168.1.109/24`, lien 1 Gbit/s |
+| Châssis | mini PC AOOSTAR, d'après l'inventaire physique existant |
+| Disque de boot | NVMe 447,13 GiB |
 
-## Disques Physiques & ZFS
+## Pool `Tank`
 
-Le stockage de données principal repose sur un système de fichiers ZFS configuré en miroir (RAID 1) pour assurer la redondance et la tolérance aux pannes.
+| Élément | Valeur au 10 septembre 2026 |
+|:---|:---|
+| VDEV | 1× miroir, 2 disques |
+| Disques | 2× 931,51 GiB Western Digital |
+| Capacité utilisable | 920 GiB |
+| Utilisation | 321,1 GiB, soit 34,9 % |
+| Disponible | 598,9 GiB |
+| Santé | ONLINE, 0 erreur |
+| Températures | 38 à 49 °C, moyenne affichée 44,7 °C |
 
-| Rôle | Disque (Modèle) | Capacité Brute | Santé (S.M.A.R.T) |
-|:---|:---|:---|:---|
-| **Disk 1** | WD Red HDD | 1 TB | ✅ Activé (Tests réguliers) |
-| **Disk 2** | WD Red HDD | 1 TB | ✅ Activé (Tests réguliers) |
+Le dernier scrub visible s'est terminé le 23 août 2026 sans erreur. Un scrub est planifié le dimanche à 13:00.
 
-*Capacité Nette Utilisable du Pool "Tank" :* **932 GB**
+## Services de fichiers
 
-## Métriques du Pool (Tank)
+- SMB actif avec 6 partages ;
+- NFS actif avec 8 exports limités au LAN ;
+- iSCSI arrêté, un target `pc` reste configuré ;
+- NVMe-oF et WebShare arrêtés.
 
-```mermaid
-pie title Utilisation du Pool Tank (Total : 932 GB)
-    "Backups Proxmox (143 GB)" : 143
-    "Films (191 GB)" : 191
-    "Séries TV (171 GB)" : 171
-    "Downloads (57 GB)" : 57
-    "Fichiers Personnels (42 GB)" : 42
-    "Projets Git (2 GB)" : 2
-    "Espace Libre (320 GB)" : 320
-```
-
-*(Mise à jour automatique des quotas via scripts de surveillance ZFS)*
+Une notification TrueNAS indique que de nouveaux feature flags ZFS sont disponibles. Aucune mise à niveau du pool n'a été lancée pendant l'audit, car cette opération est à sens unique et doit être décidée séparément.

@@ -1,36 +1,36 @@
-# Pare-Feu et Contrôle d'Accès
+# Contrôle d'accès
 
-Le réseau est sécurisé en interne par le **Pare-feu natif de Proxmox** (remplaçant UFW) et la protection dynamique **CrowdSec**.
+## Défenses actives sur Proxmox
 
-## 1. Pare-feu Proxmox (PVE Firewall)
+| Composant | État vérifié |
+|:---|:---|
+| Pare-feu Proxmox, niveau cluster | activé |
+| Pare-feu Proxmox, niveau nœud | activé |
+| `proxmox-firewall` | actif |
+| `pve-firewall` | actif |
+| CrowdSec | actif, version 1.7.8 |
+| Fail2Ban | actif, jail `sshd` |
 
-Géré au niveau du **Datacenter** et du **Nœud**, il bloque par défaut les connexions inter-VLANs.
+Les règles observées autorisent l'administration SSH et HTTPS depuis le LAN. Les ports de supervision et RPC font l'objet de règles LAN suivies d'un rejet. Des règles HTTP/HTTPS plus larges existent également et doivent être évaluées avec la politique réelle du routeur et du tunnel.
 
-### Règles d'Hôte (Host Firewall)
-| Direction | Protocole | Port | Source | Action |
-|:---|:---|:---|:---|:---|
-| IN | TCP | `8006` (WebUI) | `192.168.1.0/24` (LAN) | **ACCEPT** |
-| IN | TCP | `22` (SSH) | `192.168.1.0/24` (LAN) | **ACCEPT** |
-| IN | TCP | `80`, `443` | *Any* | **ACCEPT** (Pour NPM) |
-| IN | - | *All* | *Any* | **DROP** |
+## Isolation des workloads
 
-### Routage Inter-VLAN
-Pour que le Reverse Proxy (NPM) puisse atteindre les services sans ouvrir le pare-feu global, le conteneur **Nginx Proxy Manager** dispose d'une interface réseau virtuelle (eth1, eth2...) dans **chaque VLAN**. Cela évite le routage inter-VLANs au niveau de l'hôte.
+Les 20 conteneurs LXC sont non privilégiés. L'accès aux GPU du LXC 211 passe par des devices explicitement montés. Certains conteneurs montent des exports NFS TrueNAS nécessaires à leur rôle.
 
-## 2. Défense Active : CrowdSec & Fail2Ban
+Le réseau est actuellement plat. Il n'existe donc pas d'isolation VLAN entre les services : toute description de « défense en profondeur » doit tenir compte de cette limite.
 
-### CrowdSec
-- Bouncer configuré sur `nftables`.
-- Liste blanche locale (`192.168.1.0/24`, `10.10.0.0/16`) pour éviter un auto-bannissement.
-- **Statut actuel :** Plusieurs milliers d'adresses IP bloquées en temps réel grâce à la base de données collaborative.
+## Protection applicative
 
-### Fail2Ban
-- Surveille activement le démon `sshd` de l'hôte.
-- **Politique :** 3 échecs = Bannissement de 24 heures.
+- l'exposition web publique passe par Cloudflare Tunnel et Nginx Proxy Manager ;
+- AdGuard Home filtre le DNS du LAN ;
+- qBittorrent tourne derrière Gluetun ;
+- Vaultwarden est isolé dans son propre LXC.
 
-## 3. Sécurité du Conteneur qBittorrent (VPN Kill Switch)
+Les politiques Cloudflare Access, les redirections du routeur et les droits détaillés de chaque application n'ont pas été exportés pendant cet audit. Ils ne sont donc pas présentés ici comme vérifiés.
 
-Pour éviter toute fuite IP (DNS/Traffic leak), le conteneur 104 est verrouillé via `iptables` en interne :
-- Politique `OUTPUT DROP` par défaut.
-- Autorise uniquement le trafic vers l'interface `tun0` (Tunnel WireGuard/OpenVPN).
-- Autorise les réponses au réseau local (LAN).
+## Points de suivi
+
+- retirer ou mettre à jour les règles historiques pour `10.10.0.0/16` ;
+- appliquer les mises à jour de sécurité en attente après validation ;
+- revoir les règles HTTP/HTTPS ouvertes au niveau hôte ;
+- documenter séparément les politiques Cloudflare Access si elles doivent faire partie du modèle de confiance.

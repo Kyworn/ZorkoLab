@@ -1,53 +1,40 @@
-# Architecture Réseau
+# Architecture réseau
 
-L'architecture réseau est conçue pour garantir des performances optimales (10G) tout en isolant rigoureusement les environnements via des VLANs.
+## Topologie actuelle
 
-## Topologie L2 / L3
-
-L'hyperviseur Proxmox gère le routage entre les différents sous-réseaux virtuels.
+Le lab utilise un réseau local unique en `192.168.1.0/24`. La passerelle est `192.168.1.254`. L'hôte Proxmox ne possède qu'un bridge de production, `vmbr0`, relié à `eno1`.
 
 ```mermaid
-graph TD
-    classDef hardware fill:#34495e,stroke:#fff,stroke-width:2px,color:#fff
-    classDef vlan fill:#2980b9,stroke:#fff,stroke-width:2px,color:#fff
+flowchart TD
+    WAN((Internet)) --> CF[Cloudflare]
+    CF -->|tunnel sortant| TUN[CT 129 edge-tunnel<br/>192.168.1.129]
+    TUN --> NPM[CT 118 NPM<br/>192.168.1.18]
+    NPM --> SERVICES[Services internes]
 
-    WAN((Internet FTTH 10G)) --> BOX[Freebox Delta 192.168.1.1]:::hardware
-    BOX --> SW[Switch Gigabit]:::hardware
-    
-    SW --> PVE[Proxmox Host 192.168.1.61]:::hardware
-    SW --> NAS[TrueNAS 192.168.1.109]:::hardware
-    
-    subgraph Proxmox Bridges
-        VMBR0[vmbr0: LAN 192.168.1.x]:::vlan
-        VMBR10[vmbr10: Management 10.10.10.x]:::vlan
-        VMBR20[vmbr20: Apps 10.10.20.x]:::vlan
-        VMBR30[vmbr30: Dev 10.10.30.x]:::vlan
-        VMBR40[vmbr40: IA 10.10.40.x]:::vlan
-    end
-
-    PVE --> VMBR0
-    VMBR0 --> VMBR10
-    VMBR0 --> VMBR20
-    VMBR0 --> VMBR30
-    VMBR0 --> VMBR40
-    
-    %% NAT / Routing
-    VMBR10 -.->|NAT Masquerade| VMBR0
-    VMBR20 -.->|NAT Masquerade| VMBR0
+    GW[Passerelle<br/>192.168.1.254] --> LAN[LAN 192.168.1.0/24]
+    LAN --> PVE[Proxmox<br/>192.168.1.61]
+    LAN --> NAS[TrueNAS<br/>192.168.1.109]
+    LAN --> DNS[AdGuard Home<br/>192.168.1.12]
 ```
 
-## Plan d'Adressage (IPAM)
+## Adresses structurantes
 
-| Sous-réseau | Rôle | Passerelle (Gateway) | Politique Pare-Feu |
-|:---|:---|:---|:---|
-| **`192.168.1.0/24`** | Réseau Physique (LAN) | `192.168.1.1` (Freebox) | Fait confiance au réseau local |
-| **`10.10.10.0/24`** | VLAN 10 : Management | `10.10.10.1` (Proxmox) | Accès aux autres VLANs autorisé |
-| **`10.10.20.0/24`** | VLAN 20 : Applications | `10.10.20.1` (Proxmox) | Isolé (Sortie Internet via NAT) |
-| **`10.10.30.0/24`** | VLAN 30 : Développement | `10.10.30.1` (Proxmox) | Isolé |
-| **`10.10.40.0/24`** | VLAN 40 : IA | `10.10.40.1` (Proxmox) | Isolé |
+| Rôle | Adresse |
+|:---|:---|
+| Passerelle LAN | `192.168.1.254` |
+| Proxmox VE | `192.168.1.61` |
+| TrueNAS | `192.168.1.109` |
+| AdGuard Home | `192.168.1.12` |
+| Nginx Proxy Manager | `192.168.1.18` |
+| Cloudflare Tunnel | `192.168.1.129` |
+| Tailscale sur Proxmox | `100.64.185.80` lors de l'audit |
 
-## Résolution DNS (AdGuard Home)
+## DNS et exposition web
 
-Toutes les requêtes DNS du réseau local pointent vers une VM AdGuard Home (`192.168.1.189`).
-- **Filtrage :** 6 listes actives bloquant traqueurs et publicités (1.07M de règles).
-- **DNS Local (Rewrites) :** Le domaine `*.zorko.xyz` est redirigé vers l'IP de Nginx Proxy Manager (`10.10.10.18`), qui se charge du reverse proxying vers le bon VLAN.
+AdGuard Home assure le DNS filtrant du LAN. Le trafic publié suit le chemin Cloudflare Tunnel → LXC 129 → Nginx Proxy Manager → service cible. NPM comptait 19 proxy hosts actifs sur 24 configurés au moment de l'audit.
+
+## Écart avec l'ancienne architecture
+
+Les VLAN `10.10.10.0/24`, `10.10.20.0/24`, `10.10.30.0/24` et `10.10.40.0/24` décrits auparavant ne sont plus présents sur l'hôte : `bridge vlan show` ne révèle que le VLAN par défaut et tous les LXC utilisent le LAN `192.168.1.0/24`.
+
+Le cloisonnement repose donc aujourd'hui sur les pare-feu, les services d'edge et les contrôles applicatifs, pas sur une séparation L2/L3 par VLAN.

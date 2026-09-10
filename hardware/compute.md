@@ -1,44 +1,34 @@
-# Matériel : Serveurs de Calcul
+# Nœud de calcul
 
-Ce document inventorie le matériel physique de l'hyperviseur Proxmox.
+## Matériel
 
-## Nœud Proxmox VE (Compute)
-
-| Spécification | Détail |
+| Élément | Configuration vérifiée |
 |:---|:---|
-| **CPU** | AMD Ryzen 5 5600X (6 cœurs / 12 threads, jusqu'à 4.6 GHz) |
-| **RAM** | 32 GB DDR4 |
-| **Châssis** | Corsair 680X (Tour ATX) |
-| **Accélération Matérielle** | 2× NVIDIA Quadro P5000 (16 GB VRAM chacune) — PCI Passthrough |
-| **Stockage OS** | 512 GB NVMe SSD (LVM-thin) |
-| **Système d'Exploitation** | Proxmox VE 9.1.9 (Debian Trixie 13) |
-| **Noyau (Kernel)** | 7.0.0-3-pve |
-| **Réseau** | IP: `192.168.1.61` (LAN) |
+| CPU | AMD Ryzen 5 5600X, 6 cœurs / 12 threads |
+| RAM | 32 GiB DDR4 |
+| GPU | 2× NVIDIA Quadro P5000, 16 GiB chacune |
+| Stockage local | NVMe avec LVM-thin pour les disques LXC/VM |
+| Réseau | `eno1` vers `vmbr0`, adresse `192.168.1.61/24` |
+| Châssis | Corsair 680X, d'après l'inventaire physique existant |
 
-## Allocation des Ressources (LXC)
+## Logiciel
 
-*Tous les conteneurs sont configurés en mode "Unprivileged" (sauf LXC 201).*
+| Élément | Version au 10 septembre 2026 |
+|:---|:---|
+| Proxmox VE Manager | 9.2.11 |
+| Méta-paquet Proxmox | 9.2.0 |
+| Base | Debian 13 Trixie |
+| Noyau actif | `7.0.14-14-pve` |
+| Pilote NVIDIA | 580.126.18 |
 
-| ID | Application | IP | VLAN | Ressources Spécifiques |
-|:---|:---|:---|:---|:---|
-| **102** | Homebridge | `10.10.20.102` | Apps | - |
-| **104** | qBittorrent | `10.10.20.10` | Apps | Kill Switch iptables |
-| **112** | Docker Host | `10.10.30.12` | Dev | Nested Virtualization |
-| **114** | Vaultwarden | `10.10.20.14` | Apps | - |
-| **115** | Grafana | `10.10.10.10` | Mgmt | - |
-| **118** | Nginx Proxy Manager | `10.10.10.18` | Mgmt | Interfaces eth1, eth2, eth3 |
-| **120** | Gitea | `10.10.20.20` | Apps | - |
-| **121** | Portfolio | `10.10.30.21` | Dev | - |
-| **123** | AgentDVR | `10.10.20.23` | Apps | - |
-| **130** | Media-Hub | `10.10.20.30` | Apps | - |
-| **201** | Inference (llama.cpp) | `10.10.40.10` | IA | **2x GPU Quadro P5000** |
-| **202** | Jarvis (Hermes) | `10.10.10.20` | Mgmt | - |
+Le noyau `7.0.14-15-pve` était installé mais pas encore actif au moment de l'audit.
 
-## Points de Montage Proxmox (LVM & NFS)
+## Capacité et état
 
-| Volume | Type | Utilisation |
-|:---|:---|:---|
-| `local` | Répertoire | Stockage ISOs et Templates |
-| `nvme-biwin-storage` | LVM-thin | Disques racines des LXC / VM |
-| `Backup` | NFS | Monté depuis TrueNAS (VZDump) |
-| `Film`, `Series`, `Download` | NFS | Montés depuis TrueNAS (Médias) |
+- racine Proxmox : 194 GiB, 25 GiB utilisés ;
+- pool `nvme-biwin-storage` : 270,8 GiB, 82,5 % utilisés ;
+- NVMe : SMART réussi, 49 °C, 4 % d'usure, aucune erreur média ;
+- mémoire observée : environ 16 GiB utilisés et 14 GiB disponibles ;
+- uptime observé : environ deux semaines.
+
+Les deux P5000 sont affectées au LXC 211 `nex-llm`. Elles sont visibles depuis le conteneur et alimentent le service llama.cpp.

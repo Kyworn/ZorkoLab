@@ -1,31 +1,28 @@
-# Matériel : Réseau & Connectivité
+# Matériel réseau
 
-## Internet Edge (Routeur)
+## Accès Internet et LAN
 
-La passerelle Internet principale est gérée par une **Freebox Delta v7**.
-
-| Caractéristique | Spécification |
+| Élément | Configuration |
 |:---|:---|
-| **Connexion Physique** | Fibre Optique FTTH 10 Gbps (Port SFP) |
-| **Débit Mesuré (Crête)** | 10 Gbps ↓ / 900 Mbps ↑ |
-| **Firmware** | 4.9.18.1 |
-| **Passerelle LAN** | `192.168.1.1` |
-| **Fonctionnalités Actives** | DHCP, WireGuard VPN (Serveur distant) |
+| Routeur | Freebox Delta v7 |
+| Accès | fibre FTTH, jusqu'à 10 Gbit/s descendant et 900 Mbit/s montant d'après l'inventaire existant |
+| Passerelle actuelle | `192.168.1.254` |
+| Plan d'adressage | `192.168.1.0/24` |
 
-## Adressage & DNS (AdGuard Home)
+Le débit et le modèle du routeur n'ont pas été remesurés pendant l'audit logiciel du 10 septembre 2026.
 
-Toute la résolution DNS de la maison est confiée à une Machine Virtuelle (VM) hébergée directement sur le processeur de la Freebox Delta.
+## Commutation et Wi-Fi
 
-| Paramètre | Configuration |
-|:---|:---|
-| **IP DNS** | `192.168.1.189` |
-| **Règles de Filtrage** | 6 Listes / +1 077 000 domaines bloqués |
-| **Protocoles** | DNSSEC Actif, DoH (DNS over HTTPS) Upstream |
-| **Rewrites (Locaux)** | Résolution de `*.zorko.xyz` vers Nginx Proxy Manager (`10.10.10.18`) |
+- switch principal HPE Gigabit, adresse d'administration documentée `192.168.1.77` ;
+- trois points d'accès TP-Link Deco BE25 en mesh ;
+- Wi-Fi de la Freebox documenté comme désactivé.
 
-## Équipements de Couche 2 (L2)
+Ces éléments physiques sont conservés depuis l'inventaire précédent. Leur firmware et leur configuration n'ont pas été interrogés pendant cet audit.
 
-*   **Switch Principal :** HPE Gigabit Switch (IP Admin: `192.168.1.77`). Relie la Freebox au Proxmox et au TrueNAS.
-*   **Infrastructure Sans-Fil (Wi-Fi 7) :**
-    *   3× Points d'Accès **TP-Link Deco BE25** (Mesh).
-    *   Le Wi-Fi natif de la Freebox est **désactivé** pour éviter les interférences et bénéficier de l'itinérance (roaming) parfaite des Deco en bande 6GHz.
+## Interfaces vérifiées
+
+- Proxmox : lien principal `eno1` rattaché à `vmbr0` ;
+- TrueNAS : `enp2s0` actif à 1 Gbit/s sur `192.168.1.109/24`, `enp3s0` inactif ;
+- aucune interface VLAN de production observée sur Proxmox.
+
+AdGuard Home tourne désormais dans le LXC 119 à l'adresse `192.168.1.12`. L'ancienne VM Freebox à `192.168.1.189` n'est plus la topologie documentée.

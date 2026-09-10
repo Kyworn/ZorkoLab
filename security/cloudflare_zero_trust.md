@@ -1,28 +1,30 @@
-# Cloudflare Zero Trust
+# Cloudflare Tunnel et reverse proxy
 
-L'infrastructure s'appuie sur Cloudflare pour exposer les services de manière ultra-sécurisée, sans ouvrir le moindre port sur la Freebox.
-
-## Principe du Tunnel Cloudflared
-
-Un démon `cloudflared` tourne directement sur l'hôte Proxmox (géré à distance via Token). Il maintient des connexions sortantes (tunnels chiffrés persistants) vers les datacenters de Cloudflare.
+## Chemin du trafic
 
 ```mermaid
 sequenceDiagram
-    participant User as 👤 Utilisateur
-    participant CF as ☁️ Cloudflare Edge
-    participant CF_Daemon as 🔒 Cloudflared (PVE)
-    participant NPM as 🔀 NPM (10.10.10.18)
-    
-    User->>CF: Requête https://vault.zorko.xyz
-    Note over CF: Vérification WAF &<br/>Cloudflare Access (Auth)
-    CF->>CF_Daemon: Route le trafic via le tunnel actif
-    CF_Daemon->>NPM: Transfère la requête locale (port 80)
-    NPM->>NPM: Analyse SNI & Reverse Proxy
-    NPM->>User: Renvoie la réponse du conteneur
+    participant U as Client
+    participant C as Cloudflare
+    participant T as CT 129 cloudflared
+    participant N as CT 118 NPM
+    participant S as Service interne
+    U->>C: HTTPS
+    C->>T: Cloudflare Tunnel
+    T->>N: origine interne
+    N->>S: reverse proxy
 ```
 
-## Cloudflare Access (Identity Aware Proxy)
+`cloudflared` ne tourne plus sur l'hôte Proxmox ni dans AdGuard. Il est isolé dans le LXC 129 `edge-tunnel`, à l'adresse `192.168.1.129`. Le service systemd y était actif et utilisait cloudflared 2026.8.2 pendant l'audit.
 
-Pour les services critiques (non publics), Cloudflare Access exige une authentification forte (SSO, OTP) **avant** même de router le paquet vers le tunnel.
-- Le serveur local ne voit jamais les tentatives de bruteforce, Cloudflare absorbe tout.
-- La véritable adresse IP de la maison est masquée.
+Nginx Proxy Manager tourne dans le LXC 118 à l'adresse `192.168.1.18`. Sa base contenait :
+
+- 24 proxy hosts configurés ;
+- 19 proxy hosts actifs ;
+- aucun redirection host, dead host ou stream configuré.
+
+## Frontière de confiance
+
+Le tunnel fournit un chemin entrant initié depuis le LAN et évite d'exposer directement chaque application. NPM conserve la terminaison et le routage vers les services internes.
+
+Le terme « Zero Trust » ne doit toutefois pas être appliqué à tout le lab par extension. Les politiques Cloudflare Access n'ont pas été auditées, et le LAN ne possède actuellement pas de segmentation VLAN. La sécurité effective dépend donc aussi des règles Cloudflare, du pare-feu Proxmox, des authentifications applicatives et de la configuration du routeur.

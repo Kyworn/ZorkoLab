@@ -2,12 +2,12 @@
 
 ## Responsabilités
 
-La chaîne a été volontairement réduite à deux responsabilités :
+La chaîne cible a été volontairement réduite à deux responsabilités :
 
 - Proxmox crée les archives complètes des LXC sélectionnés avec VZDump ;
 - TrueNAS stocke ces archives et protège séparément certains datasets avec ZFS.
 
-Hermes, Beszel et les autres applications ne sont pas des orchestrateurs de sauvegarde du lab.
+Hermes, Beszel et les autres applications ne doivent pas être des orchestrateurs de sauvegarde du lab. L'audit approfondi a toutefois retrouvé une tâche Hermes historique encore active, décrite ci-dessous.
 
 ## Jobs VZDump
 
@@ -20,6 +20,12 @@ Hermes, Beszel et les autres applications ne sont pas des orchestrateurs de sauv
 Les deux jobs utilisent le mode snapshot, la compression Zstandard et le stockage NFS `Backup` sur TrueNAS.
 
 Les premiers passages manuels des deux groupes se sont terminés avec succès le 10 septembre 2026. La notification finale via `pve-ntfy`, initialement refusée avec un code 401, a été réparée puis validée par un test et par le job hebdomadaire.
+
+### Automatisation historique à retirer
+
+La tâche Hermes `pve-snapshot-daily` reste active chaque jour à 05:00 dans le LXC 203. Elle ouvre des sessions SSH root vers Proxmox et tente de conserver deux snapshots LVM-thin locaux pour les LXC compatibles. Elle a contribué au remplissage du pool thin et fait double emploi avec VZDump.
+
+Le cron équivalent présent directement sur l'hôte est déjà désactivé. La tâche Hermes doit encore être désactivée avant sa prochaine exécution afin que Proxmox redevienne l'unique orchestrateur des sauvegardes.
 
 ### Choix assumés
 

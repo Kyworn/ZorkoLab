@@ -62,16 +62,19 @@ Le calcul, le réseau, le tunnel Cloudflare et le pool ZFS sont opérationnels. 
 - la tâche de snapshots TrueNAS du dataset `backup` est désactivée ;
 - 14 mises à jour de sécurité Debian sont en attente sur l'hôte ;
 - `nvidia-persistenced.service` est en échec, même si les deux GPU et llama.cpp fonctionnent ;
-- d'anciennes règles pare-feu visant `10.10.0.0/16` subsistent alors que les VLAN ne sont plus déployés.
+- une tâche Hermes crée encore des snapshots locaux quotidiens et doit être désactivée pour laisser VZDump seul responsable des sauvegardes ;
+- les LXC en démarrage automatique totalisent 42 GiB de limites mémoire sur 32 GiB physiques ;
+- d'anciennes règles pare-feu visant `10.10.0.0/16` subsistent et les règles d'administration du nœud sont trop larges.
 
 Le premier passage de simplification a supprimé les LXC décommissionnés 140 et 202, retiré 14 snapshots automatiques obsolètes, exécuté un TRIM complet, organisé les LXC avec des tags et désactivé l'agent Beszel présent à côté de Vaultwarden. Les dernières archives des deux anciens LXC restent temporairement sur TrueNAS.
 
-Le détail, les preuves vérifiées et les limites de l'inspection sont consignés dans [AUDIT-2026-09-10.md](./AUDIT-2026-09-10.md).
+Le détail global, les preuves vérifiées et les limites de l'inspection sont consignés dans [AUDIT-2026-09-10.md](./AUDIT-2026-09-10.md). Le contrôle approfondi de l'hôte se trouve dans [PVE-HOST-AUDIT-2026-09-10.md](./PVE-HOST-AUDIT-2026-09-10.md).
 
 ## Documentation
 
 | Sujet | Document |
 |:---|:---|
+| Audit approfondi du nœud Proxmox | [PVE-HOST-AUDIT-2026-09-10.md](./PVE-HOST-AUDIT-2026-09-10.md) |
 | Topologie réseau | [architecture/network.md](./architecture/network.md) |
 | Conteneurs et virtualisation | [architecture/virtualization.md](./architecture/virtualization.md) |
 | Stockage et datasets | [architecture/storage.md](./architecture/storage.md) |

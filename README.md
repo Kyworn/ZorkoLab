@@ -56,7 +56,7 @@ L'inventaire détaillé, avec IDs, ressources et états, se trouve dans [archite
 
 Le calcul, le réseau, le tunnel Cloudflare et le pool ZFS sont opérationnels. L'audit a toutefois relevé des points à traiter :
 
-- le pool LVM-thin Proxmox est occupé à 70,9 % après le retrait des LXC décommissionnés ;
+- le pool LVM-thin Proxmox est occupé à 49,6 % après le retrait des LXC décommissionnés, la suppression de snapshots obsolètes et un TRIM complet ;
 - les jobs de sauvegarde des 9 et 10 septembre se sont terminés avec des erreurs avant ce nettoyage ;
 - les LXC 203, 210 et 211 ne figurent pas encore dans le job VZDump ;
 - la tâche de snapshots TrueNAS du dataset `backup` est désactivée ;
@@ -64,7 +64,7 @@ Le calcul, le réseau, le tunnel Cloudflare et le pool ZFS sont opérationnels. 
 - `nvidia-persistenced.service` est en échec, même si les deux GPU et llama.cpp fonctionnent ;
 - d'anciennes règles pare-feu visant `10.10.0.0/16` subsistent alors que les VLAN ne sont plus déployés.
 
-Le premier passage de simplification a supprimé les LXC décommissionnés 140 et 202, retiré leurs snapshots locaux et désactivé l'agent Beszel présent à côté de Vaultwarden. Les dernières archives des deux anciens LXC restent temporairement sur TrueNAS.
+Le premier passage de simplification a supprimé les LXC décommissionnés 140 et 202, retiré 12 snapshots automatiques obsolètes, exécuté un TRIM complet et désactivé l'agent Beszel présent à côté de Vaultwarden. Les dernières archives des deux anciens LXC restent temporairement sur TrueNAS.
 
 Le détail, les preuves vérifiées et les limites de l'inspection sont consignés dans [AUDIT-2026-09-10.md](./AUDIT-2026-09-10.md).
 

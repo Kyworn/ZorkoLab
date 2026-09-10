@@ -26,7 +26,7 @@ Le noyau `7.0.14-15-pve` était installé mais pas encore actif au moment de l'a
 ## Capacité et état
 
 - racine Proxmox : 194 GiB, 25 GiB utilisés ;
-- pool `nvme-biwin-storage` : 270,8 GiB, 70,9 % utilisés après décommissionnement des LXC 140 et 202 ;
+- pool `nvme-biwin-storage` : 270,8 GiB, 49,6 % utilisés après décommissionnement, retrait des snapshots obsolètes et TRIM ;
 - NVMe : SMART réussi, 49 °C, 4 % d'usure, aucune erreur média ;
 - mémoire observée : environ 16 GiB utilisés et 14 GiB disponibles ;
 - uptime observé : environ deux semaines.

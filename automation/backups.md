@@ -23,9 +23,9 @@ Les premiers passages manuels des deux groupes se sont terminés avec succès le
 
 ### Automatisation historique à retirer
 
-La tâche Hermes `pve-snapshot-daily` reste active chaque jour à 05:00 dans le LXC 203. Elle ouvre des sessions SSH root vers Proxmox et tente de conserver deux snapshots LVM-thin locaux pour les LXC compatibles. Elle a contribué au remplissage du pool thin et fait double emploi avec VZDump.
+La tâche Hermes `pve-snapshot-daily` ouvrait chaque jour à 05:00 des sessions SSH root vers Proxmox et tentait de conserver deux snapshots LVM-thin locaux pour les LXC compatibles. Elle a contribué au remplissage du pool thin et faisait double emploi avec VZDump.
 
-Le cron équivalent présent directement sur l'hôte est déjà désactivé. La tâche Hermes doit encore être désactivée avant sa prochaine exécution afin que Proxmox redevienne l'unique orchestrateur des sauvegardes.
+Le cron équivalent présent directement sur l'hôte était déjà désactivé. La tâche Hermes est maintenant en pause : Proxmox est l'unique orchestrateur actif des sauvegardes.
 
 ### Choix assumés
 
@@ -71,4 +71,4 @@ Aucune tâche de réplication, rsync ou cloud sync n'était visible dans TrueNAS
 
 Les LXC `backup-none` sont volontairement ignorés par ce contrôle. Les alertes passent par ntfy et un heartbeat récapitulatif est envoyé le lundi.
 
-Un nettoyage quotidien est lancé à 03:00. Point restant à revoir : il recherche des backups `*.gz`, alors que VZDump produit des archives `*.tar.zst`.
+Un nettoyage quotidien est lancé à 03:00. Il conserve désormais 14 jours de journal systemd. Sa recherche `*.gz` concerne les archives de configuration Proxmox ; la rétention des archives VZDump `*.tar.zst` est gérée directement par les deux jobs.

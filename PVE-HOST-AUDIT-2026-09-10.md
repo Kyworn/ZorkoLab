@@ -12,7 +12,7 @@ Le risque immédiat n'est pas une panne matérielle. Il vient surtout d'une acti
 |:---|:---|
 | Plateforme | Proxmox VE 9.2.11, nœud autonome sans Corosync ni HA |
 | Processeur | Ryzen 5 5600X, 6 cœurs et 12 threads |
-| Mémoire | 32 GiB physiques, 42 GiB configurés sur les LXC en démarrage automatique |
+| Mémoire | 32 GiB physiques, 23 GiB configurés sur les LXC en démarrage automatique après redimensionnement |
 | Stockage local | NVMe BIWIN 512 Go, SMART OK, 4 % d'usure |
 | LVM-thin | 270,8 GiB, 49,12 % de données et 29,46 % de métadonnées |
 | Températures | CPU 48,5 °C, NVMe 50 °C, GPU 35 et 36 °C |
@@ -33,13 +33,25 @@ La pression mémoire était nulle pendant le contrôle et aucun OOM n'a été ob
 
 Le cron local historique `/usr/local/bin/pve-daily-snapshot.sh` est bien commenté dans `/etc/crontab`. Il n'est plus la source des snapshots.
 
-La tâche Hermes `pve-snapshot-daily`, hébergée dans le LXC 203, reste activée à `05:00` chaque jour. Elle se connecte au nœud en SSH comme `root` et tente de créer deux snapshots locaux pour tous les LXC compatibles. C'est elle qui a rempli le pool thin avant l'audit et qui recréera des snapshots dès sa prochaine exécution.
+La tâche Hermes `pve-snapshot-daily`, hébergée dans le LXC 203, était activée à `05:00` chaque jour. Elle se connectait au nœud en SSH comme `root` et tentait de créer deux snapshots locaux pour tous les LXC compatibles. C'est elle qui a rempli le pool thin avant l'audit.
 
-Action recommandée : désactiver cette tâche Hermes. Les deux jobs VZDump validés deviennent l'unique mécanisme de sauvegarde des LXC. Les deux snapshots manuels pré-upgrade de 102 et 114 restent indépendants et peuvent être conservés jusqu'à validation de leurs mises à niveau.
+Action appliquée : la tâche Hermes est en pause. Les deux jobs VZDump validés sont maintenant l'unique mécanisme automatique de sauvegarde des LXC. Les deux snapshots manuels pré-upgrade de 102 et 114 restent indépendants et peuvent être conservés jusqu'à validation de leurs mises à niveau.
 
 ### Démarrage automatique et mémoire
 
-Les LXC configurés avec `onboot=1` totalisent 42 GiB de limites mémoire pour 32 GiB physiques. Le total de tous les LXC atteint 59 GiB. Ce n'est pas une consommation permanente, mais un redémarrage du nœud peut lancer trop de services simultanément et provoquer du swap ou des OOM.
+Les LXC configurés avec `onboot=1` totalisaient 42 GiB de limites mémoire pour 32 GiB physiques. Après comparaison avec les pics enregistrés sur un mois, neuf limites ont été réduites avec une marge importante. L'autostart totalise maintenant 23 GiB et tous les LXC ainsi que leurs services principaux ont été validés actifs.
+
+| LXC | Limite avant | Limite actuelle | Pic observé sur 30 jours |
+|---:|---:|---:|---:|
+| 102 Homebridge | 5 GiB | 1,5 GiB | 0,63 GiB |
+| 104 qBittorrent | 2 GiB | 1 GiB | 0,23 GiB |
+| 112 Docker | 4 GiB | 3 GiB | 1,54 GiB |
+| 114 Vaultwarden | 6 GiB | 1 GiB | 0,14 GiB |
+| 120 Gitea | 2 GiB | 1 GiB | 0,25 GiB |
+| 122 AzerothDB | 4 GiB | 3 GiB | 1,65 GiB |
+| 125 Codeman | 2 GiB | 1,5 GiB | 0,87 GiB |
+| 130 Media Hub | 4 GiB | 2 GiB | 1,08 GiB |
+| 203 Jarvis2 | 8 GiB | 4 GiB | 2,39 GiB |
 
 Les LXC 210 et 211 n'ont pas de démarrage automatique. Il faut conserver ce choix et ajouter des ordres et délais de démarrage aux services essentiels avant de réévaluer les limites mémoire.
 
@@ -51,24 +63,24 @@ Ordre conseillé : réseau et DNS, reverse proxy et tunnel, données et applicat
 
 L'authentification par mot de passe est désactivée et `root` n'accepte que les clés, ce qui est correct. En revanche :
 
-- `authorized_keys` contient douze copies identiques de l'ancienne clé `jarvis@host202` ;
+- `authorized_keys` contenait douze copies identiques de l'ancienne clé `jarvis@host202` ;
 - la clé `jarvis@openclaw` permet à Hermes de se connecter directement en root ;
 - X11 forwarding et TCP forwarding restent autorisés globalement ;
 - plusieurs vieilles clés de machines sont encore présentes sans inventaire d'usage.
 
-Action recommandée : retirer les doublons et les clés décommissionnées, puis remplacer l'accès root d'Hermes par une méthode limitée si une automatisation Proxmox doit être conservée.
+Action appliquée : les douze clés `jarvis@host202` et le doublon de la clé Hermes ont été retirés. Une seule clé `jarvis@openclaw` reste présente parce que les contrôles de santé Hermes l'utilisent encore. Il faudra la remplacer par une méthode limitée si ces contrôles sont conservés.
 
 ### Comptes API
 
-Trois identités techniques subsistent :
+Trois identités techniques subsistaient :
 
 - `Prometheus@pve` possède `PVEAdmin` sur tout le cluster, ce qui est beaucoup trop large ;
 - `exporter@pve` possède `PVEAuditor`, mais son ancien service n'existe plus ;
 - le token `root@pam!OC_Jarvis` possède `PVEAuditor`, sans expiration.
 
-Aucune utilisation de ces identités n'a été trouvée dans les logs disponibles. Un ancien fichier `/opt/pve-exporter.cfg`, lisible par tous les utilisateurs locaux, contient encore un mot de passe en clair. Le service associé est absent et `node_exporter` assure aujourd'hui les métriques sur le port 9100.
+Aucune utilisation de ces identités n'a été trouvée dans les logs disponibles. Un ancien fichier `/opt/pve-exporter.cfg`, lisible par tous les utilisateurs locaux, contenait encore un mot de passe en clair. Le service associé était absent et `node_exporter` assure aujourd'hui les métriques sur le port 9100.
 
-Action recommandée : révoquer les identités confirmées inutiles, faire tourner le secret exposé, puis supprimer les fichiers `pve-exporter` orphelins. Ne pas se contenter d'effacer le fichier contenant le secret.
+Action appliquée : les deux utilisateurs, le token et leurs ACL ont été révoqués. Les fichiers `pve-exporter` orphelins ont été supprimés. Le secret exposé n'est plus accepté par Proxmox.
 
 ### Pare-feu
 
@@ -82,18 +94,17 @@ Action recommandée : limiter l'administration du nœud au LAN et à Tailscale, 
 
 ## Priorité 3 : nettoyer l'hôte sans casser Proxmox
 
-### Candidats sûrs après validation
+### Éléments retirés après validation
 
-- Cockpit est installé mais son socket est désactivé et aucun port 9090 n'écoute.
-- Ollama est lancé au boot sur `127.0.0.1:11434`, sans modèle installé ni requête trouvée. L'inférence utile tourne dans le LXC 211.
-- dnsmasq écoute sur toutes les interfaces au port 53 sans configuration spécifique ni activité journalisée. Le DNS du LAN est assuré par AdGuard et le résolveur de l'hôte par Tailscale.
-- deux paquets `.deb` de Proxmox Backup Server, environ 65 Mo au total, restent dans `/root` alors que PBS Server n'est pas installé.
-- le dépôt `pbs-no-subscription` est configuré sans serveur PBS local.
-- plusieurs scripts historiques sans appel actif restent sous `/opt`, `/root` et `/usr/local/bin`.
+- Cockpit et ses sept paquets ont été purgés.
+- Ollama, son service, son utilisateur et son binaire ont été retirés. L'inférence utile dans le LXC 211 a été validée après l'opération.
+- dnsmasq a été purgé. La résolution DNS de l'hôte fonctionne toujours et le port 53 n'écoute plus sur Proxmox.
+- les deux paquets `.deb` de Proxmox Backup Server et le dépôt `pbs-no-subscription` ont été retirés.
+- les anciens scripts locaux de snapshots, backup et exporter sans appel actif ont été supprimés.
 
-Ces éléments peuvent être désactivés puis observés avant suppression. dnsmasq doit être testé depuis le LAN avant retrait, même s'il semble redondant.
+Les ports 53, 9090 et 11434 ne sont plus ouverts sur le nœud. Aucun `apt autoremove` n'a été lancé : sa proposition actuelle inclut des composants NVIDIA et pourrait casser l'accès GPU.
 
-Le nettoyage quotidien limite le journal systemd à trois jours. Cette rétention est trop courte pour analyser un incident découvert après un week-end ou comparer deux cycles de sauvegarde hebdomadaire. Une durée de 14 à 30 jours, ou une limite par taille, serait plus exploitable pour un coût disque raisonnable.
+Le nettoyage quotidien limitait le journal systemd à trois jours. La rétention est maintenant de 14 jours, soit deux cycles de sauvegarde hebdomadaire.
 
 ### Ne pas supprimer Ceph à l'aveugle
 
@@ -101,9 +112,9 @@ Le nœud n'utilise aucun cluster ni stockage Ceph, mais les paquets Ceph sont li
 
 ### Dépôts et mises à jour
 
-Les sources Debian contiennent `contrib` en double. Le dépôt CrowdSec vise Debian Bookworm alors que l'hôte est sous Trixie. Le dépôt NVIDIA CUDA propose une montée majeure vers la série 615.
+Les occurrences `contrib` en double dans les sources Debian et le dépôt PBS inutile ont été retirés. `apt update` fonctionne après le nettoyage. Le dépôt CrowdSec vise encore Debian Bookworm alors que l'hôte est sous Trixie. Le dépôt NVIDIA CUDA propose une montée majeure vers la série 615.
 
-Quatorze correctifs de sécurité sont en attente, mais une mise à niveau globale mélangerait ces correctifs avec Proxmox, Ceph, Cockpit, CrowdSec et NVIDIA. Il faut séparer la maintenance de sécurité du chantier GPU.
+Sept correctifs de sécurité sont en attente après actualisation des dépôts, mais une mise à niveau globale mélangerait ces correctifs avec Proxmox, Ceph, CrowdSec et NVIDIA. Il faut séparer la maintenance de sécurité du chantier GPU.
 
 ## GPU
 
@@ -125,6 +136,16 @@ Le nettoyage quotidien à 03:00 purge Docker dans les LXC 112 et 130, le journal
 
 Aucun test réel de restauration n'a encore été effectué. C'est le dernier contrôle indispensable avant de considérer la chaîne comme validée.
 
+## Contrôles secondaires dans les LXC
+
+La validation après redimensionnement a confirmé les 18 LXC actifs et leurs services principaux. Elle a aussi retrouvé des échecs systemd plus anciens, sans rapport avec la réduction de mémoire :
+
+- les LXC 102 et 112 ne peuvent pas monter `sys-kernel-config`, comportement courant avec leur confinement LXC actuel ;
+- les LXC 125, 126 et 129 échouent à créer le namespace de montage demandé par `logrotate`, `man-db`, `systemd-logind` et `systemd-networkd` ;
+- les applications Codeman, ntfy et cloudflared restent actives, mais l'échec de `logrotate` mérite une correction séparée pour éviter une croissance silencieuse des journaux.
+
+Ces unités n'ont pas été modifiées pendant le nettoyage du nœud.
+
 ## Points satisfaisants
 
 - le NVMe est sain, peu usé et le TRIM hebdomadaire est déjà actif ;
@@ -139,15 +160,15 @@ Aucun test réel de restauration n'a encore été effectué. C'est le dernier co
 
 ## Ordre de traitement conseillé
 
-1. Désactiver `pve-snapshot-daily` dans Hermes avant la prochaine exécution de 05:00.
-2. Révoquer les accès techniques orphelins et nettoyer les clés SSH décommissionnées.
-3. Corriger les règles firewall d'administration sans toucher encore aux règles applicatives des LXC.
-4. Définir l'ordre de démarrage et réduire les limites mémoire manifestement surdimensionnées.
-5. Désactiver puis retirer Cockpit, Ollama et dnsmasq après observation.
-6. Nettoyer les dépôts et appliquer les correctifs de sécurité hors pile NVIDIA.
-7. Planifier séparément l'alignement NVIDIA et le redémarrage sur le nouveau noyau.
-8. Effectuer un test de restauration d'un petit LXC depuis TrueNAS.
-9. Décider du sort des archives 127, 140 et 202.
+1. Terminé : désactiver `pve-snapshot-daily` dans Hermes.
+2. Terminé : révoquer les accès techniques orphelins et nettoyer les clés SSH décommissionnées.
+3. Différé : corriger les règles firewall d'administration après mise en place du second facteur.
+4. Partiel : limites mémoire réduites ; ordre et délais de démarrage encore à définir.
+5. Terminé : retirer Cockpit, Ollama, dnsmasq et les vestiges PBS.
+6. Partiel : sources Debian et PBS nettoyées ; dépôt CrowdSec et correctifs de sécurité encore à traiter hors pile NVIDIA.
+7. Différé : planifier l'alignement NVIDIA et le redémarrage sur le nouveau noyau.
+8. Accepté sans test : la chaîne VZDump reste validée par ses créations d'archives.
+9. À décider : sort des archives 127, 140 et 202.
 
 ## Limites
 

@@ -23,22 +23,22 @@ Chaque LXC possède également une note opérationnelle courte dans Proxmox. Le 
 
 | ID | Nom | IP | CPU | RAM | État | Rôle |
 |---:|:---|:---|---:|---:|:---:|:---|
-| 102 | homebridge | `.15`, `.102` | 4 | 5 GiB | actif | Homebridge, Beszel agent |
-| 104 | qbittorrent | `.10` | 4 | 2 GiB | actif | qBittorrent sous Gluetun |
+| 102 | homebridge | `.15`, `.102` | 4 | 1,5 GiB | actif | Homebridge, Beszel agent |
+| 104 | qbittorrent | `.10` | 4 | 1 GiB | actif | qBittorrent sous Gluetun |
 | 110 | ios-node | `.154` | 1 | 512 MiB | actif | AltServer, Anisette, pymobiledevice3 |
-| 112 | docker | `.20` | 5 | 4 GiB | actif | Veille Sociale, SearXNG, Umami, Portainer, FlareSolverr |
-| 114 | vaultwarden | `.14` | 4 | 6 GiB | actif | Vaultwarden |
+| 112 | docker | `.20` | 5 | 3 GiB | actif | Veille Sociale, SearXNG, Umami, Portainer, FlareSolverr |
+| 114 | vaultwarden | `.14` | 4 | 1 GiB | actif | Vaultwarden |
 | 118 | nginxproxymanager | `.18` | 2 | 1 GiB | actif | reverse proxy NPM/OpenResty |
 | 119 | adguard | `.12` | 1 | 1 GiB | actif | AdGuard Home |
-| 120 | gitea | `.16` | 2 | 2 GiB | actif | Gitea, MariaDB, stockage NFS |
+| 120 | gitea | `.16` | 2 | 1 GiB | actif | Gitea, MariaDB, stockage NFS |
 | 121 | portfolio | `.21` | 1 | 512 MiB | actif | portfolio Docker |
-| 122 | azerothdb | `.184` | 4 | 4 GiB | actif | AzerothDB, MariaDB, Nginx |
-| 125 | codeman | `.125` | 2 | 2 GiB | actif | Codeman Web |
+| 122 | azerothdb | `.184` | 4 | 3 GiB | actif | AzerothDB, MariaDB, Nginx |
+| 125 | codeman | `.125` | 2 | 1,5 GiB | actif | Codeman Web |
 | 126 | ntfy | `.126` | 1 | 512 MiB | actif | notifications ntfy |
 | 128 | beszel | `.128` | 2 | 1 GiB | actif | hub Beszel |
 | 129 | edge-tunnel | `.129` | 1 | 512 MiB | actif | cloudflared |
-| 130 | media-hub | `.13` | 4 | 4 GiB | actif | Sonarr, Radarr, Bazarr, Prowlarr, Seerr, Shelfmark |
-| 203 | jarvis2 | `.22` | 4 | 8 GiB | actif | Hermes Gateway |
+| 130 | media-hub | `.13` | 4 | 2 GiB | actif | Sonarr, Radarr, Bazarr, Prowlarr, Seerr, Shelfmark |
+| 203 | jarvis2 | `.22` | 4 | 4 GiB | actif | Hermes Gateway |
 | 210 | llm-gateway | `.210` | 2 | 1 GiB | actif | passerelle LLM Docker |
 | 211 | nex-llm | `.211` | 8 | 16 GiB | actif | llama.cpp, 2× Quadro P5000 |
 

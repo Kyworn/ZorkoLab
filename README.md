@@ -54,19 +54,20 @@ L'inventaire détaillé, avec IDs, ressources et états, se trouve dans [archite
 
 ## État opérationnel au 10 septembre 2026
 
-Le calcul, le réseau, le tunnel Cloudflare et le pool ZFS sont opérationnels. L'audit a toutefois relevé des points à traiter :
+Le calcul, le réseau, le tunnel Cloudflare et le pool ZFS sont opérationnels. Après nettoyage, l'état utile est le suivant :
 
 - le pool LVM-thin Proxmox est occupé à 49,1 % après le retrait des LXC décommissionnés, la suppression de snapshots obsolètes et un TRIM complet ;
 - la nouvelle politique VZDump a été testée avec succès sur les groupes quotidien et hebdomadaire ;
 - le LXC 211 ne reçoit volontairement aucun VZDump, car ses modèles et son build sont reconstruisibles ;
 - la tâche de snapshots TrueNAS du dataset `backup` est désactivée ;
 - 7 mises à jour de sécurité Debian sont en attente sur l'hôte ;
-- `nvidia-persistenced.service` est en échec, même si les deux GPU et llama.cpp fonctionnent ;
+- aucune unité systemd n'est en échec sur l'hôte ; les deux GPU et llama.cpp fonctionnent dans le LXC 211 ;
 - la tâche Hermes qui créait encore des snapshots locaux quotidiens est maintenant en pause ;
 - les limites mémoire des LXC ont été ajustées d'après leurs pics sur un mois, ramenant l'autostart de 42 à 23 GiB ;
+- le moteur historique `pve-firewall` est le seul pare-feu Proxmox actif ; le backend nftables alternatif, jamais sélectionné dans la configuration, a été désactivé ;
 - d'anciennes règles pare-feu visant `10.10.0.0/16` subsistent et les règles d'administration du nœud sont trop larges.
 
-Le nettoyage a supprimé les LXC décommissionnés 140 et 202, retiré 14 snapshots automatiques obsolètes, exécuté un TRIM complet, organisé les LXC avec des tags et désactivé l'agent Beszel présent à côté de Vaultwarden. Il a ensuite retiré les anciens accès et comptes techniques, l'ancien Prometheus, Cockpit, Ollama, dnsmasq et les vestiges PBS du nœud. Seuls trois accès SSH root restent autorisés. Les dernières archives des deux anciens LXC restent temporairement sur TrueNAS.
+Le nettoyage a supprimé les LXC décommissionnés 140 et 202, retiré 14 snapshots automatiques obsolètes, exécuté un TRIM complet, organisé les LXC avec des tags et isolé Vaultwarden de l'ancien agent Beszel. Il a ensuite retiré les anciens accès et comptes techniques, Prometheus et node_exporter, Cockpit, Ollama, Wazuh, le doublon Cloudflared, dnsmasq, les vestiges PBS, les services fantômes et les scripts sans appel du nœud. Seuls trois accès SSH root restent autorisés. Les éléments uniques supprimés pendant cette passe ont été archivés sur TrueNAS.
 
 Le détail global, les preuves vérifiées et les limites de l'inspection sont consignés dans [AUDIT-2026-09-10.md](./AUDIT-2026-09-10.md). Le contrôle approfondi de l'hôte se trouve dans [PVE-HOST-AUDIT-2026-09-10.md](./PVE-HOST-AUDIT-2026-09-10.md).
 

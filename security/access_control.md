@@ -6,12 +6,12 @@
 |:---|:---|
 | Pare-feu Proxmox, niveau cluster | activé |
 | Pare-feu Proxmox, niveau nœud | activé |
-| `proxmox-firewall` | actif |
-| `pve-firewall` | actif |
+| `proxmox-firewall` | désactivé, backend nftables non sélectionné |
+| `pve-firewall` | actif, règles iptables vérifiées |
 | CrowdSec | actif, version 1.7.8 |
 | Fail2Ban | actif, jail `sshd` |
 
-Les règles datacenter autorisent l'administration SSH et HTTPS depuis le LAN. Des règles placées au niveau du nœud autorisent toutefois SSH, HTTP et HTTPS depuis toute source et élargissent donc la portée effective. Les ports 9100 et 111 font l'objet de règles LAN suivies d'un rejet, mais `rpc.statd` écoute également sur des ports dynamiques.
+Les règles datacenter autorisent l'administration SSH et HTTPS depuis le LAN. Des règles placées au niveau du nœud autorisent toutefois SSH, HTTP et HTTPS depuis toute source et élargissent donc la portée effective. Le port 9100 a disparu avec node_exporter. Le port 111 reste limité au LAN, mais `rpc.statd` écoute également sur des ports dynamiques tant que l'export Gitea utilise NFSv3.
 
 L'accès SSH root par mot de passe est désactivé. Trois clés seulement restent autorisées : l'accès courant `zorko-proxmox`, une clé de secours `zmac` et la clé `jarvis@openclaw` nécessaire aux contrôles Hermes. Les anciennes clés, dont douze copies de `jarvis@host202`, ont été retirées.
 

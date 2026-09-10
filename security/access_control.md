@@ -15,7 +15,7 @@ Les règles observées autorisent l'administration SSH et HTTPS depuis le LAN. L
 
 ## Isolation des workloads
 
-Les 20 conteneurs LXC sont non privilégiés. L'accès aux GPU du LXC 211 passe par des devices explicitement montés. Certains conteneurs montent des exports NFS TrueNAS nécessaires à leur rôle.
+Les 18 conteneurs LXC sont non privilégiés. L'accès aux GPU du LXC 211 passe par des devices explicitement montés. Certains conteneurs montent des exports NFS TrueNAS nécessaires à leur rôle. L'agent Beszel auparavant installé dans le LXC Vaultwarden a été désactivé afin de réduire le périmètre du gestionnaire de mots de passe.
 
 Le réseau est actuellement plat. Il n'existe donc pas d'isolation VLAN entre les services : toute description de « défense en profondeur » doit tenir compte de cette limite.
 

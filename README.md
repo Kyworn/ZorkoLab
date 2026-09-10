@@ -21,7 +21,7 @@ flowchart LR
 
     LAN[LAN 192.168.1.0/24] --> PVE[Proxmox VE<br/>Ryzen 5 5600X]
     LAN --> NAS[TrueNAS<br/>Intel N100]
-    PVE --> CT[20 LXC<br/>18 actifs]
+    PVE --> CT[18 LXC<br/>tous actifs]
     PVE --> GPU[CT 211<br/>2× Quadro P5000]
     NAS --> ZFS[Tank<br/>miroir 2× 1 To]
     ZFS -. NFS .-> PVE
@@ -31,7 +31,7 @@ flowchart LR
 |:---|:---|
 | Compute | Ryzen 5 5600X, 32 GiB de RAM, Proxmox VE 9.2.11 |
 | Accélération | 2× Quadro P5000 16 GiB affectées au LXC 211 |
-| Virtualisation | 20 LXC, dont 18 actifs, plus un template VM arrêté |
+| Virtualisation | 18 LXC actifs, plus un template VM arrêté |
 | Exposition web | 19 hôtes proxy actifs sur 24 configurés dans NPM |
 | Stockage | miroir ZFS de 920 GiB utilisables, 34,9 % occupés, aucune erreur |
 | Réseau | LAN unique `192.168.1.0/24`, passerelle `192.168.1.254` |
@@ -56,13 +56,15 @@ L'inventaire détaillé, avec IDs, ressources et états, se trouve dans [archite
 
 Le calcul, le réseau, le tunnel Cloudflare et le pool ZFS sont opérationnels. L'audit a toutefois relevé des points à traiter :
 
-- le pool LVM-thin Proxmox est occupé à 82,5 % et bloque certains snapshots de sauvegarde ;
-- les jobs de sauvegarde des 9 et 10 septembre se sont terminés avec des erreurs ;
+- le pool LVM-thin Proxmox est occupé à 70,9 % après le retrait des LXC décommissionnés ;
+- les jobs de sauvegarde des 9 et 10 septembre se sont terminés avec des erreurs avant ce nettoyage ;
 - les LXC 203, 210 et 211 ne figurent pas encore dans le job VZDump ;
 - la tâche de snapshots TrueNAS du dataset `backup` est désactivée ;
 - 14 mises à jour de sécurité Debian sont en attente sur l'hôte ;
 - `nvidia-persistenced.service` est en échec, même si les deux GPU et llama.cpp fonctionnent ;
 - d'anciennes règles pare-feu visant `10.10.0.0/16` subsistent alors que les VLAN ne sont plus déployés.
+
+Le premier passage de simplification a supprimé les LXC décommissionnés 140 et 202, retiré leurs snapshots locaux et désactivé l'agent Beszel présent à côté de Vaultwarden. Les dernières archives des deux anciens LXC restent temporairement sur TrueNAS.
 
 Le détail, les preuves vérifiées et les limites de l'inspection sont consignés dans [AUDIT-2026-09-10.md](./AUDIT-2026-09-10.md).
 

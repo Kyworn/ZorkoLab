@@ -9,9 +9,9 @@
 | Mode | snapshot |
 | Compression | Zstandard |
 | Rétention | dernier backup uniquement |
-| Workloads inclus | 102, 104, 110, 112, 114, 118, 119, 120, 121, 122, 125, 126, 128, 129, 130, 140, 202 |
+| Workloads inclus | 102, 104, 110, 112, 114, 118, 119, 120, 121, 122, 125, 126, 128, 129, 130 |
 
-Les LXC 203, 210 et 211 ne sont pas encore inclus. Les jobs des 9 et 10 septembre 2026 se sont terminés avec des erreurs. Le log du 10 septembre relie l'échec à l'impossibilité de créer de nouveaux snapshots LVM-thin lorsque le seuil d'espace libre est atteint.
+Les LXC 203, 210 et 211 ne sont pas inclus. Les anciens LXC 140 et 202 ont été retirés du job lors de leur décommissionnement. Les jobs des 9 et 10 septembre 2026 se sont terminés avec des erreurs. Le log du 10 septembre relie l'échec à l'impossibilité de créer de nouveaux snapshots LVM-thin lorsque le seuil d'espace libre est atteint.
 
 ## Snapshots TrueNAS
 

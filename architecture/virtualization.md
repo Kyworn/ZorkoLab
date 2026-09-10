@@ -15,7 +15,7 @@ Les IDs restent stables et ne codent aucune fonction. Renuméroter un LXC n'appo
 | `media` | 104, 130 | téléchargement et gestion média |
 | `ai` | 203, 210, 211 | assistants, gateway et inférence |
 
-La politique de sauvegarde utilisera plus tard des tags séparés. Les tags fonctionnels ne doivent pas servir à décider seuls si un LXC est sauvegardé.
+La politique de sauvegarde utilise un second tag indépendant : `backup-daily`, `backup-weekly` ou `backup-none`. Le rôle fonctionnel ne sert donc jamais à déduire implicitement la protection du LXC.
 
 Chaque LXC possède également une note opérationnelle courte dans Proxmox. Le format reste identique partout : rôle, emplacement des données, protection actuelle, dépendances et éventuel point d'attention. Les anciennes descriptions publicitaires générées par les scripts d'installation ont été retirées.
 
